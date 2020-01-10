@@ -8,23 +8,33 @@ import { NetworkTables } from './utils/networktables'
 import * as logger from './utils/logger'
 
 Vue.config.productionTip = false
+// IP address of the robot
+const IP_ADDRESS = '10.29.90.2';
+let isRobotConnected = false;
+
 
 new Vue({
     vuetify,
     render: h => h(App),
     mounted() {
-        logger.logEvent('Mounted ran');
         NetworkTables.addRobotConnectionListener(onRobotConnection, false);
-        NetworkTables.connect('connect', '10.29.90.2');
+        if (!isRobotConnected) {
+            NetworkTables.connect(IP_ADDRESS);
+            setTimeout(this.connectionRetry, 1000);
+        }
         NetworkTables.addKeyListener('/SmartDashboard/UltrasonicDown', consoleListener);
-        NetworkTables.addKeyListener('/SmartDashboard/FGR1 raw encoder ', consoleListener);
-        NetworkTables.addKeyListener('/SmartDashboard/FGR1 Limit', consoleListener);
-        NetworkTables.addKeyListener('/SmartDashboard/BGR1 Limit', consoleListener);
-        NetworkTables.addKeyListener('/SmartDashboard/BGR2 Limit', consoleListener);
-        NetworkTables.addKeyListener('/SmartDashboard/Navx Value', consoleListener);
-        NetworkTables.addKeyListener('/SmartDashboard/Pot Value', consoleListener);
-        NetworkTables.addKeyListener('/FMSInfo/MatchTime', consoleListener);
-        NetworkTables.addKeyListener('/SmartDashboard/autoSelect', consoleListener);
+    },
+    methods: {
+        connectionRetry: function () {
+            // If the robot is connected do nothing
+            if (isRobotConnected) return;
+
+            // If no connection, try to connect again and then check again in 1 second
+            logger.logEvent('Attepting robot connection to: ' + IP_ADDRESS);
+            NetworkTables.connect(IP_ADDRESS);
+            setTimeout(this.connectionRetry, 1000);
+
+        }
     }
 }).$mount('#app')
 
