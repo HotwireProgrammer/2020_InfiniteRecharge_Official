@@ -27,7 +27,7 @@ public class LimelightTrack extends AutoStep {
     }
 
     public void Begin() {
-        robot.hitTarget = false;
+        //robot.hitTarget = false;
     }
 
     public void Update() {
