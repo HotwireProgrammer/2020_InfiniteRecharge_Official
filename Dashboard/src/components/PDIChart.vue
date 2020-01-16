@@ -1,63 +1,107 @@
-<template>
-    <div>
-        <apexchart type=line width=850 :options="chartOptions" :series="series" />
-    </div>
-</template>
-
 <script>
 import VueApexCharts from 'vue-apexcharts'
 // import Vue from 'vue';
 
-let ts2 = 1484418600000;
-let dates = [];
+const SERIES_LENGTH = 120;
+// let time = 1484418600000;
+let volta = [];
+let rpmGoal = [];
+let startingRpmGoalVal = 76;
 
 function addData() {
-    ts2 = ts2 + 1000;
     let val = Math.floor((Math.random() * 5) + 40);
     const spikeChance = Math.random();
     if (spikeChance > .98) {
         val += 30;
-    } else if (spikeChance > .1 && dates && dates[dates.length-1] && dates[dates.length-1][1] > 60) {
+    } else if (spikeChance > .1 && volta && volta[volta.length-1] && volta[volta.length-1][1] > 60) {
         val += 30;
     }
-    return [ts2, val];
-
+    return val;
 }
 
-for (let i = 0; i < 120; i++) {
-    dates.push(addData())
+for (let i = 0; i < SERIES_LENGTH; i++) {
+    // time = time + 1000;
+    volta.push(addData())
+    rpmGoal.push(startingRpmGoalVal)
 }
 
 
 export default {
-    name: 'PowerChart',
+    name: 'PDIChart',
     components: {
         apexchart: VueApexCharts,
     },
-    data: () => {
+
+    mounted: function() {
+        this.setRpmGoal(this.rpmGoalVal);
+        setInterval(() => {
+            // let tmp0 = this.series[0].data;
+            // tmp0.shift();
+            // this.series[1].data.shift();
+            // tmp0.push((addData()));
+            // this.series[1].data.push(parseInt(this.rpmGoalVal));
+            // this.series[0].data = tmp0;
+            // this.series[1].data = this.series[1].data;
+            // this.$children[0].resetSeries();
+            // this.$children[0].updateSeries([{
+            //     name: 'A Volts',
+            //     data: this.series[0].data
+            // },{
+            //     name: 'RPM Goal',
+            //     data: this.series[1].data
+            // }])
+
+        }, 1000);
+    },
+    methods: {
+        setRpmGoal: function(newGoal) {
+            console.log('newGoal', newGoal);
+            this.$children[0].updateSeries([
+                this.series[0],
+                {
+                    name: 'RPM Goal',
+                    data: Array(SERIES_LENGTH).fill(parseInt(newGoal))
+                }
+            ])
+        },
+        send: function() {
+            console.log('p', this.pVal);
+            console.log('i', this.iVal);
+            console.log('d', this.dVal);
+        }
+    },
+    data: function() {
         return {
+            pVal: 0,
+            iVal: 0,
+            dVal: 0,
+            rpmGoalVal: startingRpmGoalVal,
             series: [{
                 name: 'A Volts',
-                data: dates
+                data: volta
+            },{
+                name: 'RPM Goal',
+                data: Array(SERIES_LENGTH).fill(startingRpmGoalVal)
             }],
             chartOptions: {
                 chart: {
-                    animations: {
-                        enabled: false
-                    },
-                    stacked: false,
+                    // animations: {
+                    //     enabled: false
+                    // },
+                    // stacked: false,
                     zoom: {
-                        type: 'x',
-                        enabled: true,
-                        autoScaleYaxis: false
+                        enabled: false
                     },
                     toolbar: {
                         autoSelected: 'zoom'
                     }
                 },
                 stroke: {
-                    width: 2
+                    show: true,
+                    curve: 'smooth',
+                    width: [2, 2],
                 },
+
                 dataLabels: {
                     enabled: false
                 },
@@ -67,42 +111,51 @@ export default {
                 },
                 // colors: ['ff65fc'],
                 title: {
-                    text: 'Motor Stats',
-                    align: 'left'
+                    text: 'Blaster RPMs',
+                    align: 'Center'
                 },
                 yaxis: {
                     type: 'number',
                     title: {
-                        text: 'Volts'
+                        text: 'RPMs'
                     },
                     min: 0,
                     max: 100
                 },
                 xaxis: {
-                    labels: {
-                        formatter: function (val) {
-                            const label = `${new Date(val).getMinutes()}:${new Date(val).getSeconds()}`;
-                            return label;
-                        }
-                    },
+                    type: 'numeric',
                     title: {
-                        text: 'Minutes:Seconds'
-                    }
+                        text: 'Time'
+                    },
+                    min: 0,
+                    max: 100
                 }
             }
         }
-    },
-    mounted: function() {
-        setInterval(() => {
-            let d = this.series[0].data
-            d.shift();
-            d.push(addData());
-            this.series = [{
-                data: d
-            }]
-            // this.series[0].data = d;
-        }, 1000);
     }
 };
 
 </script>
+
+<template>
+    <div>
+        <apexchart type="line" :options="chartOptions" :series="series" />
+        <v-row no-gutters>
+            <v-col cols="1">
+                <v-text-field label="P" v-model="pVal"></v-text-field>
+            </v-col>
+            <v-col cols="1">
+                <v-text-field label="I" v-model="iVal"></v-text-field>
+            </v-col>
+            <v-col cols="1">
+                <v-text-field label="D" v-model="dVal"></v-text-field>
+            </v-col>
+             <v-col cols="4">
+                <v-text-field label="PRM Goal" v-model="rpmGoalVal" @change="setRpmGoal"></v-text-field>
+            </v-col>
+             <v-col cols="4">
+                <v-btn outlined color="primary" @click="send()">Send</v-btn>
+            </v-col>
+        </v-row>
+    </div>
+</template>

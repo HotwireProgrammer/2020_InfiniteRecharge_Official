@@ -131,7 +131,7 @@ function RobotClientConnections() {
             // Listens to the changes coming from the client
         };
         if(err) {
-            logger.logError(err.message);
+            logger.logError('Background: RobotClientConnections - ' + err.message);
         }
 
         // If the Window is ready than send the connection status to it
@@ -141,9 +141,9 @@ function RobotClientConnections() {
         connectedFunc = connectFunc;
     });
 
-    ipcMain.on('ready', (eventName, mesg) => {
+    ipcMain.on('ready', (event, mesg) => {
         if(mesg) {
-            logger.logEvent(eventName + ': ' + mesg.val);
+            logger.logEvent('ICP: ' + mesg.val);
         }
         logger.logEvent('NetworkTables is ready');
         ready = win != null;
@@ -152,11 +152,11 @@ function RobotClientConnections() {
         if (connectedFunc) connectedFunc();
     });
 
-    ipcMain.on('connect', (eventName, address, port) => {
-        logger.logEvent(`${eventName}: Trying to connect to ${address} ${(port ? ':' + port : '')}`);
+    ipcMain.on('connect', (event, address, port) => {
+        logger.logEvent(`ICP: Trying to connect to ${address} ${(port ? ':' + port : '')}`);
         let callback = (connected, err) => {
             if(err) {
-                logger.logError(err.message);
+                logger.logError('ICP: Connect - ' + err.message);
             } else {
                 logger.logEvent('Connected?');
                 win.webContents.send('connected', connected);
@@ -168,19 +168,19 @@ function RobotClientConnections() {
             client.start(callback, address);
         }
     });
-    ipcMain.on('add', (eventName, mesg) => {
-        logger.logEvent(eventName + ': Connected?');
+    ipcMain.on('add', (event, mesg) => {
+        logger.logEvent('ICP: Add - ' + mesg);
         client.Assign(mesg.val, mesg.key, (mesg.flags & 1) === 1);
     });
-    ipcMain.on('update', (eventName, mesg) => {
-        logger.logEvent(eventName + ': ');
+    ipcMain.on('update', (event, mesg) => {
+        logger.logEvent('ICP: Update ' + mesg);
         client.Update(mesg.id, mesg.val);
     });
-    ipcMain.on('windowError', (eventName, error) => {
+    ipcMain.on('windowError', (event, error) => {
         if(error.message) {
-            logger.logEvent(eventName + ': ' + error.message);
+            logger.logEvent('ICP: Window Error - ' + error.message);
         }else {
-            logger.logError(eventName + ': Unknown error');
+            logger.logError('ICP: Window Error Unknown error');
         }
     });
 }

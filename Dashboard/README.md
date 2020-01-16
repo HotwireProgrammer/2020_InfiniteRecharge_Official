@@ -1,7 +1,7 @@
 # driver-dash
 
 Run for development
-`npm run electron:serve`
+`npm start`
 
 Build for production
 `npm run electron:build`

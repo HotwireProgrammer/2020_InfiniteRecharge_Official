@@ -1,12 +1,7 @@
-<template>
-    <div>
-        <apexchart type=line width=850 :options="chartOptions" :series="series" />
-    </div>
-</template>
-
 <script>
 import VueApexCharts from 'vue-apexcharts'
-// import Vue from 'vue';
+import { NetworkTables } from '../utils/networktables'
+import * as logger from '../utils/logger'
 
 let ts2 = 1484418600000;
 let dates = [];
@@ -81,7 +76,9 @@ export default {
                 xaxis: {
                     labels: {
                         formatter: function (val) {
-                            const label = `${new Date(val).getMinutes()}:${new Date(val).getSeconds()}`;
+                            var seconds = new Date(val).getSeconds() + "";
+                            while (seconds.length < 2) seconds = "0" + seconds;
+                            const label = `${new Date(val).getMinutes()}:${seconds}`;
                             return label;
                         }
                     },
@@ -92,17 +89,30 @@ export default {
             }
         }
     },
-    mounted: function() {
-        setInterval(() => {
+    methods: {
+        updateVoltA: function (newValue) {
             let d = this.series[0].data
             d.shift();
-            d.push(addData());
+            d.push();
             this.series = [{
                 data: d
             }]
             // this.series[0].data = d;
+            logger.logData('voltA', newValue)
+        }
+    },
+    mounted: function() {
+        NetworkTables.addKeyListener('/SmartDashboard/VoltA', this.updateVoltA);
+        setInterval(() => {
+            this.updateVoltA(addData())
         }, 1000);
     }
 };
 
 </script>
+
+<template>
+    <div>
+        <apexchart type=line width=850 :options="chartOptions" :series="series" />
+    </div>
+</template>

@@ -10,6 +10,7 @@ import * as logger from './utils/logger'
 Vue.config.productionTip = false
 // IP address of the robot
 const IP_ADDRESS = '10.29.90.2';
+const retryFreq = 10; //In seconds
 let isRobotConnected = false;
 
 
@@ -17,9 +18,10 @@ new Vue({
     vuetify,
     render: h => h(App),
     mounted() {
+        logger.logEvent('MOUNTED');
         NetworkTables.addRobotConnectionListener(onRobotConnection, false);
+        isRobotConnected = NetworkTables.isRobotConnected();
         if (!isRobotConnected) {
-            NetworkTables.connect(IP_ADDRESS);
             setTimeout(this.connectionRetry, 1000);
         }
         NetworkTables.addKeyListener('/SmartDashboard/UltrasonicDown', consoleListener);
@@ -32,7 +34,7 @@ new Vue({
             // If no connection, try to connect again and then check again in 1 second
             logger.logEvent('Attepting robot connection to: ' + IP_ADDRESS);
             NetworkTables.connect(IP_ADDRESS);
-            setTimeout(this.connectionRetry, 1000);
+            setTimeout(this.connectionRetry, retryFreq * 1000);
 
         }
     }
@@ -40,7 +42,7 @@ new Vue({
 
 
 function onRobotConnection() {
-    logger.logEvent('onRobotConnection: Robot has connected');
+    logger.logEvent('Robot has connected to dashboard');
 }
 function consoleListener(key, value) {
     logger.logEvent(key + ' :: ' + value);

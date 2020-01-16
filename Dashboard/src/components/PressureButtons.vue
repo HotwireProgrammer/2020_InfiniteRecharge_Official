@@ -1,3 +1,14 @@
+<script>
+
+export default {
+    name: 'PressureButtons',
+
+    components: {},
+
+    data: () => ({ icon: 'football'}),
+};
+</script>
+
 <template>
     <div>
         <v-btn-toggle v-model="icon" borderless color="accent">
@@ -18,14 +29,3 @@
         </v-btn-toggle>
     </div>
 </template>
-
-<script>
-
-export default {
-    name: 'PressureButtons',
-
-    components: {},
-
-    data: () => ({ icon: 'football'}),
-};
-</script>
