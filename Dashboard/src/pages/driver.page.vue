@@ -1,11 +1,14 @@
 <script>
 import { NetworkTables } from '../utils/networktables'
+import ControlButton from '../components/ControlButton'
+import Indicator from '../components/Indicator'
+
 import * as logger from '../utils/logger'
 
 export default {
     name: 'DriverPage',
 
-    components: {},
+    components: {ControlButton, Indicator}, 
 
     data: function() {
         return {
@@ -37,38 +40,18 @@ export default {
                     text: 'Green',
                     value: 3
                 }
-            ]
+            ],
+            rpmValue: {
+                value: 50,
+                label: 'RPMs',
+                color: 'primary'
+            }
         }
     },
     methods: {
-        startAuto: function() {
-            NetworkTables.putValue('startAuto', this.autoModeValue);
-            console.log("THE AUTO HAS STARTED - ",  this.autoModeValue);
-        },
-        setColor: function() {
-            NetworkTables.putValue('setcolor', this.colorSelectionValue);
-            console.log("COLOR - ",  this.colorSelectionValue);
-        },
-        spinColorWheel: function() {
-            NetworkTables.putValue('spinColorWheel', true);
-            console.log("COLOR WHEEL - ",  true);
-        },
-        climb: function() {
-            NetworkTables.putValue('climb', true);
-            console.log("CLIMB  - ",  true);
-            logger.endMatchProcessing();
-        },
         endMatch: function() {
             console.log("CLIMB  - ",  true);
             logger.endMatchProcessing();
-        },
-        reachUp: function() {
-            NetworkTables.putValue('reachUp', true);
-            console.log("REACH UP  - ",  true);
-        },
-        toggleIntake: function() {
-            NetworkTables.putValue('toggleIntake', true);
-            console.log("TOGGLE INTAKE  - ",  true);
         }
     },
 };
@@ -76,6 +59,7 @@ export default {
 
 <template>
 <v-container class="fill-height" fluid>
+
     <div class="auto-container">
         <v-select
             :items="autoModes"
@@ -86,12 +70,7 @@ export default {
             item-color="primary"
             class="auto-dropdown"
         ></v-select>
-        <v-btn
-            class="auto-button"
-            outlined
-            color="primary"
-            height="55"
-            @click="startAuto()">Start Auto</v-btn>
+        <ControlButton class="auto-button" label="Start Auto" networkKey="start auto" />
     </div>
     <div class="color-container">
         <v-select
@@ -103,37 +82,21 @@ export default {
             item-color="primary"
             class="auto-dropdown"
         ></v-select>
-        <v-btn
-            class="auto-button"
-            outlined
-            color="primary"
-            height="55"
-            @click="setColor()">Set Color</v-btn>
+        <ControlButton class="auto-button" label="Set Color" networkKey="set color" />
     </div>
-        <v-btn
-            class="auto-button"
-            outlined
-            color="primary"
-            height="55"
-            @click="spinColorWheel()">Spin Color Wheel</v-btn>
-    <v-btn
-            class="auto-button"
-            outlined
-            color="primary"
-            height="55"
-            @click="climb()">Climb</v-btn>
-        <v-btn
-            class="auto-button"
-            outlined
-            color="primary"
-            height="55"
-            @click="reachUp()">Reach Up</v-btn>
-    <v-btn
-            class="auto-button"
-            outlined
-            color="primary"
-            height="55"
-            @click="toggleIntake()">Toggle Intake</v-btn>
+         <v-slider
+             v-model="rpmValue.value"
+            :label="rpmValue.label"
+            :thumb-color="rpmValue.color"
+            thumb-label="always"
+    ></v-slider>
+        <ControlButton class="auto-button" label="Toggle Shooter" networkKey="toggle shooter" />    
+        <ControlButton class="auto-button" label="Spin Color Wheel" networkKey="spin color wheel" />
+        <ControlButton class="auto-button" label="Climb" networkKey="climb" />
+        <ControlButton class="auto-button" label="Reach Up" networkKey="reach up" />
+        <ControlButton class="auto-button" label="Toggle Intake" networkKey="toggle intake" />
+        <indicator icon="robot-vacuum" label="intake status" networkKey="intake"/>
+        <indicator icon="home" label="shooter status" networkKey="shooter"/>
 </v-container>
 </template>
 
