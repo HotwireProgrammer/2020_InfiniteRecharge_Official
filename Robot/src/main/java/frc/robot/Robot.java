@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 
+import edu.wpi.first.wpilibj.DriverStation;
+
 import java.nio.Buffer;
 import java.rmi.server.Operation;
 
@@ -35,11 +37,38 @@ import edu.wpi.first.hal.PDPJNI;
 import frc.robot.autostep.*;
 import edu.wpi.first.wpilibj.Compressor;
 
+import com.revrobotics.ColorSensorV3;
+import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.util.Color;
+
+//BUTTONS
+//		TELEOP
+// 	Right: 
+// 8 Climb up !DOUBLE CHECK!
+// 9 climb down !DOUBLE CHECK!
+
+// 10 Diskbreak off
+// 11 Diskbreak on
+
+// 	Left:
+// 6 LL Forward
+// 7 LL Backward
+
+// 8 Color Wheel # reset
+// 9 Color Wheel Spin X times
+
+// 10 Color Wheel Spin
+// 11 Color Wheel Find
+
 public class Robot extends TimedRobot {
 
 	// Sensors
 	public AHRS navx = new AHRS(SPI.Port.kMXP);
-
+	private ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
+	public DigitalInput ColorWheelLimit = new DigitalInput(7);
+	public float encoderSpeed1 = 0;
+	public float encoderSpeed2 = 0;
+	// public Encoder shooterEncoder = new Encoder();
 	// Drivetrain
 	public DriveTrain driveTrain = new DriveTrain(0, 1, 2, 3, navx);
 
@@ -53,10 +82,15 @@ public class Robot extends TimedRobot {
 	public Joystick flightStickLeft;
 	public Joystick flightStickRight;
 
-	
+	public TalonSRX climberOne = new TalonSRX(7);
+	public TalonSRX climberTwo = new TalonSRX(8);
+
+	boolean limitPressed;
+
 	public enum DriveScale {
 		linear, parabala, tangent, inverse, cb, cbrt,
 	}
+
 	enum AutoChoice {
 		// Left, Right
 	}
@@ -64,6 +98,13 @@ public class Robot extends TimedRobot {
 	enum RobotState {
 		Autonomous, Teleop;
 	}
+
+	enum ColorWheel {
+		Red, Green, Blue, Yellow, Unknown, Broken;
+	}
+
+	public ColorWheel LastColor;
+	public int colorChangsCount;
 
 	public RobotState currentState;
 
@@ -108,6 +149,7 @@ public class Robot extends TimedRobot {
 	}
 
 	public void teleopInit() {
+		colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(2);
 
 		currentState = RobotState.Teleop;
@@ -119,8 +161,9 @@ public class Robot extends TimedRobot {
 		flightStickRight = new Joystick(2);
 	}
 
-	//Drive Scale
+	// Drive Scale
 	public float DriveScaleSelector(float ControllerInput, DriveScale selection) {
+
 		float multiplier = (ControllerInput / (float) Math.abs(ControllerInput));
 
 		if (selection == DriveScale.parabala) {
@@ -132,7 +175,7 @@ public class Robot extends TimedRobot {
 
 		} else if (selection == DriveScale.inverse) {
 
-			return (float) Math.pow(ControllerInput, 1/2);
+			return (float) Math.pow(ControllerInput, 1 / 2);
 
 		} else if (selection == DriveScale.cb) {
 
@@ -149,43 +192,108 @@ public class Robot extends TimedRobot {
 		}
 	}
 
-
 	public void teleopPeriodic() {
 
-		// Turning
-		// Buttons: 2=X 3=B
+		// Intake Sensor (31)
+		if (ColorWheelLimit.get() == true && !limitPressed)
+		{
+			limitPressed = true;
+			colorChangsCount = colorChangsCount + 1;
+		}
+		if (ColorWheelLimit.get() == false)
+		{
+			limitPressed = false;
+		}
+		System.out.println("Color Changes: " + colorChangsCount);
 
-		/*
-		 * System.out.println(navx.getYaw()); if (operator.getRawButton(8)) {
-		 * navx.reset(); }
-		 * 
-		 * if (operator.getRawButton(3)) { driveTrain.SetRightSpeed(-0.4f);
-		 * driveTrain.SetLeftSpeed(0.0f);
-		 * 
-		 * } else if (operator.getRawButton(2)) {
-		 * 
-		 * driveTrain.SetRightSpeed(0.4f); driveTrain.SetLeftSpeed(-0.0f);
-		 * 
-		 * } else {
-		 * 
-		 * driveTrain.SetRightSpeed(0f); driveTrain.SetLeftSpeed(0f);
-		 * 
-		 * }
-		 * 
-		 */
+		// Color Sensor (25)
+		// ColorWheel currentColor = GetCurrentColor();
+		// if (currentColor != LastColor && currentColor != ColorWheel.Unknown) {
+		// 	colorChangsCount = colorChangsCount + 1;
+		// 	LastColor = currentColor;
+		// }
+
+		if (flightStickLeft.getRawButton(8)) {
+
+			colorChangsCount = 0;
+
+		}
+
+		// Color Wheel Spin
+
+		if (flightStickLeft.getRawButton(9)) {
+
+			if (colorChangsCount <= 31) {//25
+
+				climberOne.set(ControlMode.PercentOutput, 1.0f);
+
+			} else {
+
+				climberOne.set(ControlMode.PercentOutput, 0.0f);
+
+			}
+
+		} else {
+
+			if (flightStickLeft.getRawButton(10)) {
+
+				climberOne.set(ControlMode.PercentOutput, 1.0f);
+
+			} else {
+
+				climberOne.set(ControlMode.PercentOutput, 0.0f);
+
+			}
+		}
+
+		// Color Wheel Find
+		if (flightStickLeft.getRawButton(11)) {
+
+			if (GetTargetColor() != LastColor) {
+
+				climberOne.set(ControlMode.PercentOutput, 1.0f);
+
+			} else {
+
+				climberOne.set(ControlMode.PercentOutput, 0.0f);
+
+			}
+
+		}
 
 		// Disk Break
-		if (flightStickRight.getRawButton(3)) {
+		if (flightStickRight.getRawButton(11)) {
 
 			DiskBrakeEnable();
 
-		} else if (flightStickRight.getRawButton(2)) {
+		} else if (flightStickRight.getRawButton(10)) {
 
 			DiskBrakeDisable();
 		}
 
-		SmartDashboard.putNumber("UltrasonicDown", accum);
-		accum++;
+		SmartDashboard.putNumber("UltrasonicDown", 123.0);
+		
+		double valueFromDashboard = SmartDashboard.getNumber("dashboard_key", 0.0);
+		boolean runShooter = SmartDashboard.getBoolean("RunShooter", false);
+		if (runShooter) {
+			// Run shooter motors
+		}
+
+		// // Climber
+		// if (flightStickRight.getRawButton(9)) {
+
+		// climberOne.set(ControlMode.PercentOutput, 1.0f * -1);
+		// climberTwo.set(ControlMode.PercentOutput, 1.0f);
+
+		// } else if (flightStickRight.getRawButton(8)) {
+
+		// climberOne.set(ControlMode.PercentOutput, 1.0f);
+		// climberTwo.set(ControlMode.PercentOutput, 1.0f * -1);
+
+		// } else {
+		// climberOne.set(ControlMode.PercentOutput, 0);
+		// climberTwo.set(ControlMode.PercentOutput, 0);
+		// }
 
 		// Limelight
 		NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
@@ -199,15 +307,53 @@ public class Robot extends TimedRobot {
 
 		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(0);
 
-		if (flightStickRight.getRawButton(1)) {
-			float turnBuffer = 3;
-			if (x > turnBuffer) {
-				driveTrain.SetLeftSpeed(0.4f);
+		if (flightStickLeft.getRawButton(6) || (flightStickLeft.getRawButton(7))) {
+
+			float inverted = 1;
+
+			if (flightStickLeft.getRawButton(6)) {
+
+				inverted = 1;
+
+			} else {
+
+				inverted = -1;
+
+			}
+
+			float maxArea = 3.4f;
+			float minArea = 0.26f;
+			float currentAreaPercentage = ((float) area - minArea) / (maxArea - minArea);
+
+			float maxSpeed = 0.9f;
+			float minSpeed = 0.7f;
+			float currentSpeed = Lerp(minSpeed, maxSpeed, currentAreaPercentage);
+
+			float turnBuffer = 1.5f;
+			float turnSpeedSlow = -currentSpeed * 0.5f;
+
+			if (x * inverted > turnBuffer) {
+
+				driveTrain.SetLeftSpeed(currentSpeed * inverted);
+				driveTrain.SetRightSpeed(turnSpeedSlow * inverted);
+
+			} else if (x * inverted < -turnBuffer) {
+
+				driveTrain.SetLeftSpeed(turnSpeedSlow * inverted);
+				driveTrain.SetRightSpeed(currentSpeed * inverted);
+
+			} else {
+
+				driveTrain.SetLeftSpeed(0.0f);
+				driveTrain.SetRightSpeed(0.0f);
+
 			}
 		} else {
+
 			ControllerDrive();
 
 		}
+
 		UpdateMotors();
 	}
 
@@ -220,14 +366,101 @@ public class Robot extends TimedRobot {
 		operator = new Joystick(1);
 		flightStickLeft = new Joystick(3);
 		flightStickRight = new Joystick(2);
-
+	
 	}
 
 	public void testPeriodic() {
 
+		double poweraxis = (flightStickRight.getRawAxis(2) * -1);
+		// System.out.println(flightStickRight.getRawAxis(2));
+
+		// Shooter
+		if (flightStickRight.getRawButton(11)) {
+
+			climberOne.set(ControlMode.PercentOutput, 1.0f * -1);
+			climberTwo.set(ControlMode.PercentOutput, 1.0f);
+
+		} else if (flightStickRight.getRawButton(10)) {
+
+			climberOne.set(ControlMode.PercentOutput, 0.75f * -1);
+			climberTwo.set(ControlMode.PercentOutput, 0.75f);
+
+		} else if (flightStickRight.getRawButton(6)) {
+
+			climberOne.set(ControlMode.PercentOutput, poweraxis * -1);
+			climberOne.set(ControlMode.PercentOutput, poweraxis);
+
+		} else {
+			climberOne.set(ControlMode.PercentOutput, 0);
+			climberTwo.set(ControlMode.PercentOutput, 0);
+		}
+		encoderSpeed1 = climberOne.getSelectedSensorVelocity();
+		System.out.println(encoderSpeed1);
+		
+
+		// encoderSpeed2 = climberTwo.getSelectedSensorVelocity();
+		// System.out.println("climber two" + encoderSpeed2);
+		
 		ControllerDrive();
 		UpdateMotors();
 
+	}
+
+	public ColorWheel GetCurrentColor() {
+
+		Color detectedColor = colorSensor.getColor();
+		//System.out.println(detectedColor.red + " - " + detectedColor.green + " - " + detectedColor.blue);
+
+		// detecting blue
+		{
+			float redMin = 0.15f;
+			float greenMin = 0.45f;
+			float blueMin = 0.4f;
+
+			if (detectedColor.red < redMin && detectedColor.green < greenMin && detectedColor.blue > blueMin) {
+				return ColorWheel.Blue;
+			}
+		}
+
+		// detecting green
+		{
+			float redMin = 0.2f;
+			float greenMin = 0.54f;
+			float blueMin = 0.28f;
+
+			if (detectedColor.red < redMin && detectedColor.green > greenMin && detectedColor.blue < blueMin) {
+				return ColorWheel.Green;
+			}
+
+		}
+
+		// detecting Red
+		{
+			float redMin = 0.45f;
+			float greenMin = 0.4f;
+			float blueMin = 0.16f;
+
+			if (detectedColor.red > redMin && detectedColor.green < greenMin && detectedColor.blue < blueMin) {
+				return ColorWheel.Red;
+			}
+		}
+
+		// detecting yellow
+		{
+			float redMin = 0.3f;
+			float greenMin = 0.53f;
+			float blueMin = 0.1f;
+
+			if (detectedColor.red > redMin && detectedColor.green > greenMin && detectedColor.blue > blueMin) {
+				return ColorWheel.Yellow;
+			}
+		}
+
+		if (detectedColor.red == 0 && detectedColor.green == 0 && detectedColor.blue == 0) {
+			return ColorWheel.Broken;
+		}
+
+		return ColorWheel.Unknown;
 	}
 
 	public void UpdateMotors() {
@@ -246,6 +479,7 @@ public class Robot extends TimedRobot {
 
 	public void ControllerDrive() {
 		if (arcadeDrive) {
+
 			// Arcade
 			float horJoystick = TranslateController((float) driver.getRawAxis(4));
 			float verJoystick = TranslateController((float) driver.getRawAxis(1));
@@ -254,9 +488,10 @@ public class Robot extends TimedRobot {
 			driveTrain.SetLeftSpeed(-verJoystick + horJoystick);
 			driveTrain.SetCoast();
 		} else {
+
 			// tank
-			float leftJoystick = (float) flightStickLeft.getRawAxis(1);
-			float rightJoystick = (float) flightStickRight.getRawAxis(1);
+			float leftJoystick = DriveScaleSelector((float) flightStickLeft.getRawAxis(1), DriveScale.linear);
+			float rightJoystick = DriveScaleSelector((float) flightStickRight.getRawAxis(1), DriveScale.linear);
 
 			driveTrain.SetRightSpeed(-rightJoystick);
 			driveTrain.SetLeftSpeed(-leftJoystick);
@@ -264,21 +499,33 @@ public class Robot extends TimedRobot {
 		}
 	}
 
-	public boolean Limelight(LimelightPlacement placement) {
+	public float Lerp(float v0, float v1, float t) {
 
-		NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-		NetworkTableEntry tx = table.getEntry("tx");
-		NetworkTableEntry ty = table.getEntry("ty");
-		NetworkTableEntry ta = table.getEntry("ta");
-		NetworkTableEntry tv = table.getEntry("tv");
+		if (t < 0) {
+			t = 0;
 
-		double x = tx.getDouble(0.0);
-		double y = ty.getDouble(0.0);
-		double area = ta.getDouble(0.0);
-		double value = tv.getDouble(0.0);
+		} else if (t > 1) {
+			t = 1;
+		}
 
-		driveTrain.SetBreak();
+		return (v0 + t * (v1 - v0));
+	}
 
-		return true;
+	public ColorWheel GetTargetColor() {
+		String gameData = DriverStation.getInstance().getGameSpecificMessage();
+		if (gameData.length() > 0) {
+			switch (gameData.charAt(0)) {
+			case 'B':
+				return ColorWheel.Blue;
+			case 'G':
+				return ColorWheel.Green;
+			case 'R':
+				return ColorWheel.Red;
+			case 'Y':
+				return ColorWheel.Yellow;
+			}
+		}
+
+		return ColorWheel.Unknown;
 	}
 }

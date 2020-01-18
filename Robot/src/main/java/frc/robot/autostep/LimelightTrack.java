@@ -47,9 +47,7 @@ public class LimelightTrack extends AutoStep {
             driveTrain.SetRightSpeed(-0.35f * direction);
 
         }else{
-            if (robot.Limelight(placement)) {
-                isDone = true;
-            }
+
         }
 
        
