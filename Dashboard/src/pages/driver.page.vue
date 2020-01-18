@@ -1,20 +1,7 @@
 <script>
 import PDIChart from '../components/PDIChart';
 import { NetworkTables } from '../utils/networktables'
-
-
-// const autoModeList = [{
-//     text: 'Basic Mode',
-//     value: 0
-// },
-// {
-//     text: 'Advanced Mode',
-//     value: 0
-// },
-// {
-//     text: 'Super Mode',
-//     value: 0
-// }];
+import * as logger from '../utils/logger'
 
 export default {
     name: 'DriverPage',
@@ -25,6 +12,8 @@ export default {
 
     data: function() {
         return {
+            autoModeValue: 0,
+            colorSelectionValue: 0
         }
     },
     methods: {
@@ -43,6 +32,7 @@ export default {
         climb: function() {
             NetworkTables.putValue('climb', true);
             console.log("CLIMB  - ",  true);
+            logger.endMatchProcessing();
         },
         reachUp: function() {
             NetworkTables.putValue('reachUp', true);
@@ -53,8 +43,6 @@ export default {
             console.log("TOGGLE INTAKE  - ",  true);
         }
     },
-
-    data: () => ({ data: null}),
 };
 </script>
 

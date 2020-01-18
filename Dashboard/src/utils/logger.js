@@ -57,16 +57,26 @@ export async function endMatchProcessing() {
     const dateStr = `${new Date().getFullYear()}-${new Date().getMonth()+1}-${new Date().getDate()}`;
 
     function _createMatchFolder(num) {
-        fs.access(`src/logs/${dateStr}/match-${num}`)
+        fs.access(`src/logs/matches/${dateStr}/match-${num}`)
             .then(() => {
                 _createMatchFolder(num+1)
             })
             .catch(async (err) => {
+                console.log('in the then');
+
                 const postMatchPath = `src/logs/matches/${dateStr}/match-${num}/`;
                 await fs.mkdir(postMatchPath, { recursive: true });
-                fs.rename(errLogPath, postMatchPath + 'error.log')
-                fs.rename(eventLogPath, postMatchPath + 'event.log')
-                // TODO: process data logs here
+                fs.rename(errLogPath, postMatchPath + 'error.log');
+                fs.rename(eventLogPath, postMatchPath + 'event.log');
+                const dataPath = 'src/logs/data/';
+                let dirs = await fs.readdir(dataPath);
+                dirs.sort();
+
+                dirs.forEach(async (file) => {
+                    console.log('file', file);
+                    let data = await fs.readFile(dataPath + file);
+                    await fs.appendFile(postMatchPath + 'dataFile.csv', `${file.substring(0, file.length - 4)},${data}\n`);
+                });
             });
     }
     _createMatchFolder(0);

@@ -3,26 +3,35 @@ import VueApexCharts from 'vue-apexcharts'
 import { NetworkTables } from '../utils/networktables'
 import * as logger from '../utils/logger'
 
-let ts2 = 1484418600000;
-let dates = [];
+const SERIES_LENGTH = 100;
+let voltA = [];
+let voltB = [];
+let voltC = [];
+let voltD = [];
+let voltE = [];
+// let startDangerLevelData = [];
+let startingDangerLevel = 76;
 
-function addData() {
-    ts2 = ts2 + 1000;
+function addData(dataList) {
     let val = Math.floor((Math.random() * 5) + 40);
     const spikeChance = Math.random();
-    if (spikeChance > .98) {
+    if (spikeChance > .99) {
         val += 30;
-    } else if (spikeChance > .1 && dates && dates[dates.length-1] && dates[dates.length-1][1] > 60) {
+    } else if (spikeChance > .1 && dataList && dataList[dataList.length-1] && dataList[dataList.length-1] > 60) {
         val += 30;
     }
-    return [ts2, val];
-
+    return val;
 }
 
-for (let i = 0; i < 120; i++) {
-    dates.push(addData())
+for (let i = 0; i < SERIES_LENGTH; i++) {
+    // time = time + 1000;
+    voltA.push(addData(voltA));
+    voltB.push(addData(voltB));
+    voltC.push(addData(voltC));
+    voltD.push(addData(voltD));
+    voltE.push(addData(voltE));
+    // startDangerLevelData.push(startingDangerLevel);
 }
-
 
 export default {
     name: 'PowerChart',
@@ -31,10 +40,28 @@ export default {
     },
     data: () => {
         return {
-            series: [{
-                name: 'A Volts',
-                data: dates
-            }],
+            dangerLevel: startingDangerLevel,
+            series: [
+                {
+                    name: 'Danger Level',
+                    data: Array(SERIES_LENGTH).fill(startingDangerLevel)
+                },{
+                    name: 'A Volts',
+                    data: voltA
+                },{
+                    name: 'B Volts',
+                    data: voltB
+                },{
+                    name: 'C Volts',
+                    data: voltC
+                },{
+                    name: 'D Volts',
+                    data: voltD
+                },{
+                    name: 'E Volts',
+                    data: voltE
+                }
+            ],
             chartOptions: {
                 chart: {
                     animations: {
@@ -60,7 +87,6 @@ export default {
                     mode: 'dark',
                     palette: 'palette3'
                 },
-                // colors: ['ff65fc'],
                 title: {
                     text: 'Motor Stats',
                     align: 'left'
@@ -74,17 +100,12 @@ export default {
                     max: 100
                 },
                 xaxis: {
-                    labels: {
-                        formatter: function (val) {
-                            var seconds = new Date(val).getSeconds() + "";
-                            while (seconds.length < 2) seconds = "0" + seconds;
-                            const label = `${new Date(val).getMinutes()}:${seconds}`;
-                            return label;
-                        }
-                    },
+                    type: 'numeric',
                     title: {
-                        text: 'Minutes:Seconds'
-                    }
+                        text: 'Time'
+                    },
+                    min: 0,
+                    max: 100
                 }
             }
         }
@@ -104,7 +125,43 @@ export default {
     mounted: function() {
         NetworkTables.addKeyListener('/SmartDashboard/VoltA', this.updateVoltA);
         setInterval(() => {
-            this.updateVoltA(addData())
+            let data = [this.series[0].data];
+            data[0].shift();
+            data[0].push(parseInt(this.dangerLevel));
+
+            for (let i = 1; i < 6; i++) {
+                let tmp = this.series[i].data;
+                tmp.shift();
+                tmp.push((addData(tmp)));
+                data.push(tmp);
+            }
+            logger.logData('voltA', data[1][data[1].length-1])
+            logger.logData('voltB', data[2][data[2].length-1])
+            logger.logData('voltC', data[3][data[3].length-1])
+            logger.logData('voltD', data[4][data[4].length-1])
+            logger.logData('voltE', data[5][data[5].length-1])
+
+
+            this.$children[0].updateSeries([{
+                name: 'Danger Level',
+                data: data[0]
+            },{
+                name: 'A Volts',
+                data: data[1]
+            },{
+                name: 'B Volts',
+                data: data[2]
+            },{
+                name: 'C Volts',
+                data: data[3]
+            },{
+                name: 'D Volts',
+                data: data[4]
+            },{
+                name: 'E Volts',
+                data: data[5]
+            },]);
+            // this.updateVoltA(addData())
         }, 1000);
     }
 };

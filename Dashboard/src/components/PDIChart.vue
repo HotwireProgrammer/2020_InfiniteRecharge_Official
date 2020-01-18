@@ -2,27 +2,25 @@
 import VueApexCharts from 'vue-apexcharts'
 // import Vue from 'vue';
 
-const SERIES_LENGTH = 120;
-// let time = 1484418600000;
-let volta = [];
+const SERIES_LENGTH = 100;
+let rpms = [];
 let rpmGoal = [];
 let startingRpmGoalVal = 76;
 
-function addData() {
+function addData(dataList) {
     let val = Math.floor((Math.random() * 5) + 40);
     const spikeChance = Math.random();
-    if (spikeChance > .98) {
+    if (spikeChance > .99) {
         val += 30;
-    } else if (spikeChance > .1 && volta && volta[volta.length-1] && volta[volta.length-1][1] > 60) {
+    } else if (spikeChance > .1 && dataList && dataList[dataList.length-1] && dataList[dataList.length-1] > 60) {
         val += 30;
     }
     return val;
 }
 
 for (let i = 0; i < SERIES_LENGTH; i++) {
-    // time = time + 1000;
-    volta.push(addData())
-    rpmGoal.push(startingRpmGoalVal)
+    rpms.push(addData(rpms));
+    rpmGoal.push(startingRpmGoalVal);
 }
 
 
@@ -35,34 +33,28 @@ export default {
     mounted: function() {
         this.setRpmGoal(this.rpmGoalVal);
         setInterval(() => {
-            // let tmp0 = this.series[0].data;
-            // tmp0.shift();
-            // this.series[1].data.shift();
-            // tmp0.push((addData()));
-            // this.series[1].data.push(parseInt(this.rpmGoalVal));
-            // this.series[0].data = tmp0;
-            // this.series[1].data = this.series[1].data;
-            // this.$children[0].resetSeries();
-            // this.$children[0].updateSeries([{
-            //     name: 'A Volts',
-            //     data: this.series[0].data
-            // },{
-            //     name: 'RPM Goal',
-            //     data: this.series[1].data
-            // }])
+            let data = [this.series[0].data];
+            data[0].shift();
+            data[0].push(parseInt(this.rpmGoalVal));
+
+            let tmp = this.series[1].data;
+            tmp.shift();
+            tmp.push((addData(tmp)));
+            data.push(tmp);
+
+            this.$children[0].updateSeries([{
+                name: 'RPM Goal',
+                data: data[0]
+            },{
+                name: 'RPMs',
+                data: data[1]
+            }]);
 
         }, 1000);
     },
     methods: {
         setRpmGoal: function(newGoal) {
-            console.log('newGoal', newGoal);
-            this.$children[0].updateSeries([
-                this.series[0],
-                {
-                    name: 'RPM Goal',
-                    data: Array(SERIES_LENGTH).fill(parseInt(newGoal))
-                }
-            ])
+            this.rpmGoalVal = newGoal;
         },
         send: function() {
             console.log('p', this.pVal);
@@ -77,18 +69,17 @@ export default {
             dVal: 0,
             rpmGoalVal: startingRpmGoalVal,
             series: [{
-                name: 'A Volts',
-                data: volta
-            },{
                 name: 'RPM Goal',
                 data: Array(SERIES_LENGTH).fill(startingRpmGoalVal)
+            },{
+                name: 'RPMs',
+                data: rpms
             }],
             chartOptions: {
                 chart: {
-                    // animations: {
-                    //     enabled: false
-                    // },
-                    // stacked: false,
+                    animations: {
+                        enabled: false
+                    },
                     zoom: {
                         enabled: false
                     },
@@ -109,7 +100,6 @@ export default {
                     mode: 'dark',
                     palette: 'palette3'
                 },
-                // colors: ['ff65fc'],
                 title: {
                     text: 'Blaster RPMs',
                     align: 'Center'

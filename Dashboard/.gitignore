@@ -1,5 +1,6 @@
-/.DS_Store
+*/.DS_Store
 .DS_Store
+../.DS_Store
 node_modules
 /dist
 
@@ -20,6 +21,7 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+*.log
 
 #Electron-builder output
 /dist_electron
