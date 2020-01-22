@@ -1,16 +1,16 @@
 <script>
-import PowerChart from '../components/PowerChart';
-import PressureButtons from '../components/PressureButtons';
-import UltrasonicDownCounter from '../components/UltrasonicDownCounter';
+// import PowerChart from '../components/PowerChart';
+// import PressureButtons from '../components/PressureButtons';
+// import UltrasonicDownCounter from '../components/UltrasonicDownCounter';
 import PDIChart from '../components/PDIChart';
 
 export default {
     name: 'DetailedPage',
 
     components: {
-        PowerChart,
-        PressureButtons,
-        UltrasonicDownCounter,
+        // PowerChart,
+        // PressureButtons,
+        // UltrasonicDownCounter,
         PDIChart
     },
 
@@ -20,9 +20,9 @@ export default {
 
 <template>
 <v-container class="fill-height" fluid>
-    <PowerChart />
+    <!-- <PowerChart />
     <PressureButtons />
-    <UltrasonicDownCounter />
+    <UltrasonicDownCounter /> -->
     <PDIChart class="pdi-chart" />
 </v-container>
 </template>

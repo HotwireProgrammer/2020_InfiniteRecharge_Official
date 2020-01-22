@@ -96,7 +96,7 @@ export default {
         <ControlButton class="auto-button" label="Reach Up" networkKey="reach up" />
         <ControlButton class="auto-button" label="Toggle Intake" networkKey="toggle intake" />
         <indicator icon="robot-vacuum" label="intake status" networkKey="intake"/>
-        <indicator icon="home" label="shooter status" networkKey="shooter"/>
+        <indicator icon="home" label="disk break status" networkKey="diskBrakeStatus"/>
 </v-container>
 </template>
 

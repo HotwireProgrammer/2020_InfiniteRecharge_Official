@@ -115,6 +115,7 @@ export const NetworkTables =
                     let temp = keys[key];
                     f(key, temp.val, temp.new);
                 }
+                console.log('key list',  keyListeners)
             },
             /**
              * Use this to test whether a value is present in the table or not

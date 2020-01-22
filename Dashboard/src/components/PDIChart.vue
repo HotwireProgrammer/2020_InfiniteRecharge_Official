@@ -1,8 +1,9 @@
 <script>
 import VueApexCharts from 'vue-apexcharts'
+import { NetworkTables } from '../utils/networktables';
 // import Vue from 'vue';
 
-const SERIES_LENGTH = 100;
+const SERIES_LENGTH = 1000;
 let rpms = [];
 let rpmGoal = [];
 let startingRpmGoalVal = 76;
@@ -19,8 +20,8 @@ function addData(dataList) {
 }
 
 for (let i = 0; i < SERIES_LENGTH; i++) {
-    rpms.push(addData(rpms));
-    rpmGoal.push(startingRpmGoalVal);
+    // rpms.push(0);
+    // rpmGoal.push(startingRpmGoalVal);
 }
 
 
@@ -32,27 +33,45 @@ export default {
 
     mounted: function() {
         this.setRpmGoal(this.rpmGoalVal);
-        setInterval(() => {
-            let data = [this.series[0].data];
-            data[0].shift();
-            data[0].push(parseInt(this.rpmGoalVal));
+        NetworkTables.addKeyListener('/SmartDashboard/encoderSpeed1', this.addSpeedvalue);
+        // setInterval(() => {
+        //     let data = [this.series[0].data];
+        //     data[0].shift();
+        //     data[0].push(parseInt(this.rpmGoalVal));
 
-            let tmp = this.series[1].data;
-            tmp.shift();
-            tmp.push((addData(tmp)));
-            data.push(tmp);
+        //     let tmp = this.series[1].data;
+        //     tmp.shift();
+        //     tmp.push((addData(tmp)));
+        //     data.push(tmp);
 
-            this.$children[0].updateSeries([{
-                name: 'RPM Goal',
-                data: data[0]
-            },{
-                name: 'RPMs',
-                data: data[1]
-            }]);
+        //     this.$children[0].updateSeries([{
+        //         name: 'RPM Goal',
+        //         data: data[0]
+        //     },{
+        //         name: 'RPMs',
+        //         data: data[1]
+        //     }]);
 
-        }, 1000);
+        // }, 1000);
     },
     methods: {
+        addSpeedvalue: function(key, newSpeed) {
+            console.log('newSpeed', newSpeed);
+            let time = new Date();
+            // let data = [this.series[0].data];
+            // data[0].shift();
+            // data[0].push([time, parseInt(this.rpmGoalVal)]);
+
+            // let tmp = this.series[0].data;
+            // tmp.shift();
+            // tmp.push([time, newSpeed*-1]);
+            // data.push(tmp);
+
+            this.$children[0].appendData([{
+                // name: 'RPMs',
+                data: [[time, newSpeed*-1]]
+            }]);
+        },
         setRpmGoal: function(newGoal) {
             this.rpmGoalVal = newGoal;
         },
@@ -69,11 +88,8 @@ export default {
             dVal: 0,
             rpmGoalVal: startingRpmGoalVal,
             series: [{
-                name: 'RPM Goal',
-                data: Array(SERIES_LENGTH).fill(startingRpmGoalVal)
-            },{
                 name: 'RPMs',
-                data: rpms
+                data: []
             }],
             chartOptions: {
                 chart: {
@@ -110,15 +126,22 @@ export default {
                         text: 'RPMs'
                     },
                     min: 0,
-                    max: 100
+                    // max: 100
                 },
                 xaxis: {
-                    type: 'numeric',
+                    type: 'datetime',
+                    datetimeFormatter: {
+                        year: 'yyyy',
+                        month: "MMM 'yy",
+                        day: 'dd MMM',
+                        hour: 'HH:mm',
+                        seconds: 'mm:ss:fff'
+                    },
                     title: {
                         text: 'Time'
                     },
-                    min: 0,
-                    max: 100
+                    // min: 0,
+                    // max: 100
                 }
             }
         }
