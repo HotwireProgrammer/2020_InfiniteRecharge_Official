@@ -4,6 +4,7 @@ import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib'
 import * as wpilib_NT from 'wpilib-nt-client' ;
 import * as logger from './utils/logger';
+import * as fileTables from './utils/fileTables';
 
 const client = new wpilib_NT.Client();
 client.setReconnectDelay(1000)

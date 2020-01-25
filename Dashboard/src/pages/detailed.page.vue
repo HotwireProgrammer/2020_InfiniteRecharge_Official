@@ -2,7 +2,7 @@
 // import PowerChart from '../components/PowerChart';
 // import PressureButtons from '../components/PressureButtons';
 // import UltrasonicDownCounter from '../components/UltrasonicDownCounter';
-import PDIChart from '../components/PDIChart';
+import PIDChart from '../components/PIDChart';
 
 export default {
     name: 'DetailedPage',
@@ -11,7 +11,7 @@ export default {
         // PowerChart,
         // PressureButtons,
         // UltrasonicDownCounter,
-        PDIChart
+        PIDChart
     },
 
     data: () => ({ data: null}),
@@ -23,12 +23,12 @@ export default {
     <!-- <PowerChart />
     <PressureButtons />
     <UltrasonicDownCounter /> -->
-    <PDIChart class="pdi-chart" />
+    <PIDChart class="pid-chart" />
 </v-container>
 </template>
 
 <style scoped lang="scss">>
-.pdi-chart {
+.pid-chart {
     width: 600px;
 }
 </style>
