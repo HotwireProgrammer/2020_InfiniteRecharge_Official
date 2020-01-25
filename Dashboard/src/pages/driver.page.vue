@@ -8,7 +8,7 @@ import * as logger from '../utils/logger'
 export default {
     name: 'DriverPage',
 
-    components: {ControlButton, Indicator}, 
+    components: {ControlButton, Indicator},
 
     data: function() {
         return {
@@ -40,12 +40,7 @@ export default {
                     text: 'Green',
                     value: 3
                 }
-            ],
-            rpmValue: {
-                value: 50,
-                label: 'RPMs',
-                color: 'primary'
-            }
+            ]
         }
     },
     methods: {
@@ -60,7 +55,20 @@ export default {
 <template>
 <v-container class="fill-height" fluid>
 
-    <div class="auto-container">
+    <div class="video"></div>
+
+    <div class="indicators">
+        <indicator icon="car-connected" label="Robot Connected" networkKey="diskBrakeStatus"/>
+        <indicator icon="robot" label="Robot Enabled" networkKey="diskBrakeStatus"/>
+        <indicator icon="robot-mower" label="Intake on" networkKey="intakeOn"/>
+        <indicator icon="robot-industrial" label="Intake Extended" networkKey="intakeExtended"/>
+        <indicator icon="share-all" label="Shooter" networkKey="diskBrakeStatus"/>
+        <indicator icon="plus-circle-multiple-outline" label="Shooter loaded" networkKey="diskBrakeStatus"/>
+        <indicator icon="elevator-up" label="Climbing" networkKey="diskBrakeStatus"/>
+        <indicator icon="transfer-up" label="Climber Extending" networkKey="diskBrakeStatus"/>
+        <indicator icon="ship-wheel" label="Spinning Wheel" networkKey="diskBrakeStatus"/>
+    </div>
+    <div class="choices">
         <v-select
             :items="autoModes"
             label="Auto Mode"
@@ -72,31 +80,14 @@ export default {
         ></v-select>
         <ControlButton class="auto-button" label="Start Auto" networkKey="start auto" />
     </div>
-    <div class="color-container">
-        <v-select
-            :items="colorModes"
-            label="Select Color"
-            v-model="colorSelectionValue"
-            outlined
-            color="primary"
-            item-color="primary"
-            class="auto-dropdown"
-        ></v-select>
-        <ControlButton class="auto-button" label="Set Color" networkKey="set color" />
-    </div>
-         <v-slider
-             v-model="rpmValue.value"
-            :label="rpmValue.label"
-            :thumb-color="rpmValue.color"
-            thumb-label="always"
-    ></v-slider>
-        <ControlButton class="auto-button" label="Toggle Shooter" networkKey="toggle shooter" />    
+    <div class="actions">
+        <ControlButton class="auto-button" label="Toggle Shooter" networkKey="toggle shooter" />
         <ControlButton class="auto-button" label="Spin Color Wheel" networkKey="spin color wheel" />
         <ControlButton class="auto-button" label="Climb" networkKey="climb" />
         <ControlButton class="auto-button" label="Reach Up" networkKey="reach up" />
         <ControlButton class="auto-button" label="Toggle Intake" networkKey="toggle intake" />
-        <indicator icon="robot-vacuum" label="intake status" networkKey="intake"/>
-        <indicator icon="home" label="disk break status" networkKey="diskBrakeStatus"/>
+        <ControlButton class="auto-button" label="Set Color" networkKey="set color" />
+    </div>
 </v-container>
 </template>
 
@@ -115,5 +106,11 @@ export default {
 
     .color-container {
         margin-left: 30px;
+    }
+
+    .video {
+        width: 400px;
+        height: 300px;
+        background: black;
     }
 </style>

@@ -1,6 +1,7 @@
 <script>
-import VueApexCharts from 'vue-apexcharts'
+// import VueApexCharts from 'vue-apexcharts'
 import { NetworkTables } from '../utils/networktables';
+import Trend from "vuetrend"
 // import Vue from 'vue';
 
 const SERIES_LENGTH = 1000;
@@ -26,14 +27,22 @@ for (let i = 0; i < SERIES_LENGTH; i++) {
 
 
 export default {
-    name: 'PDIChart',
+    name: 'PIDChart',
     components: {
-        apexchart: VueApexCharts,
+        // apexchart: VueApexCharts,
+        Trend
     },
 
     mounted: function() {
         this.setRpmGoal(this.rpmGoalVal);
         NetworkTables.addKeyListener('/SmartDashboard/encoderSpeed1', this.addSpeedvalue);
+        setInterval(() => {
+            this.rpmData.push(addData(this.rpmData));
+            console.log(this.rpmData.length);
+            if(this.rpmData.length > 1000) {
+                this.rpmData.shift();
+            }
+        }, 10);
         // setInterval(() => {
         //     let data = [this.series[0].data];
         //     data[0].shift();
@@ -68,7 +77,6 @@ export default {
             // data.push(tmp);
 
             this.$children[0].appendData([{
-                // name: 'RPMs',
                 data: [[time, newSpeed*-1]]
             }]);
         },
@@ -76,6 +84,9 @@ export default {
             this.rpmGoalVal = newGoal;
         },
         send: function() {
+            NetworkTables.putValue('/SmartDashboard/encoderSpeed1-p', this.pVal);
+            NetworkTables.putValue('/SmartDashboard/encoderSpeed1-i', this.iVal);
+            NetworkTables.putValue('/SmartDashboard/encoderSpeed1-d', this.dVal);
             console.log('p', this.pVal);
             console.log('i', this.iVal);
             console.log('d', this.dVal);
@@ -91,6 +102,7 @@ export default {
                 name: 'RPMs',
                 data: []
             }],
+            rpmData: [0, 2, 5, 9, 5, 10, 3, 5, 0, 0, 1, 8, 2, 9, 0],
             chartOptions: {
                 chart: {
                     animations: {
@@ -152,7 +164,14 @@ export default {
 
 <template>
     <div>
-        <apexchart type="line" :options="chartOptions" :series="series" />
+        <!-- <apexchart type="line" :options="chartOptions" :series="series" /> -->
+        <trend
+            :data="rpmData"
+            auto-draw
+        >
+                    <!-- :gradient="['#6fa8dc', '#42b983', '#2c3e50']"
+            smooth -->
+        </trend>
         <v-row no-gutters>
             <v-col cols="1">
                 <v-text-field label="P" v-model="pVal"></v-text-field>
