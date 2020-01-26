@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.hal.PDPJNI;
 import frc.robot.autostep.*;
@@ -45,11 +45,13 @@ import edu.wpi.first.wpilibj.util.Color;
 //		TELEOP
 // 	Right: 
 
+// 6 Shooter with PowerAxis
+
 // 8 Climb up !DOUBLE CHECK!
 // 9 climb down !DOUBLE CHECK!
 
-// 10 Diskbreak off
-// 11 Diskbreak on
+// 10 Shooter at Low Power
+// 11 Shooter at High Power
 
 // 	Left:
 // 6 LL Forward
@@ -89,8 +91,8 @@ public class Robot extends TimedRobot {
 
 	// Nuemataics
 	public DoubleSolenoid diskBrake = new DoubleSolenoid(3, 2);
-	
-	//Logic
+
+	// Logic
 	public boolean speedToggle = false;
 
 	// Joysticks
@@ -102,16 +104,33 @@ public class Robot extends TimedRobot {
 
 	public double powerAxis;
 
-	public TalonSRX preShooter = new TalonSRX(9);
-	public TalonSRX preShooterTwo = new TalonSRX(0);
-	public TalonSRX indexer = new TalonSRX(0);
-	public TalonSRX shooterThree = new TalonSRX(10);
-	public TalonSRX shooterFour = new TalonSRX(2);
-	public TalonSRX climberOne = new TalonSRX(7);
-	public TalonSRX climberTwo = new TalonSRX(8);
+	// Motors
+	public TalonSRX indexerThree = new TalonSRX(3);
+
+	public TalonSRX preShooterFour = new TalonSRX(4);
+	public TalonSRX preShooterSix = new TalonSRX(6);
+
+	public TalonSRX shooterTwo = new TalonSRX(2);
+	public TalonSRX shooterFive = new TalonSRX(5);
+
+	public TalonSRX MotorSeven = new TalonSRX(7);
+	public TalonSRX MotorEight = new TalonSRX(8);
+
+	// Timer
 	public Timer indexTimer = new Timer();
 
-	public int testNumber = 0;
+	// PID
+	public double shooterP = 0.002;
+	public double shooterI = 0.001;
+	public double shooterD = 0.00001;
+	public double shooterRPMTarget;
+
+	String shooterPKey = "Shooter_P";
+	String shooterIKey = "Shooter_I";
+	String shooterDKey = "Shooter_D";
+	String shooterRPMKey = "Shooter_RPMTarget";
+
+	PIDController shooterPid = new PIDController(shooterP, shooterI, shooterD);
 
 	boolean limitPressed;
 
@@ -136,9 +155,6 @@ public class Robot extends TimedRobot {
 
 	public RobotState currentState;
 
-	public enum LimelightPlacement {
-	};
-
 	// Auto
 	public AutoStep[] autonomous;
 	public int currentAutoStep;
@@ -146,6 +162,11 @@ public class Robot extends TimedRobot {
 	public int accum;
 
 	public void robotInit() {
+		SmartDashboard.putNumber(shooterPKey, shooterP);
+		SmartDashboard.putNumber(shooterIKey, shooterI);
+		SmartDashboard.putNumber(shooterDKey, shooterD);
+		SmartDashboard.putNumber(shooterRPMKey, shooterRPMTarget);
+
 		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(2);
 	}
 
@@ -168,19 +189,8 @@ public class Robot extends TimedRobot {
 	public void autonomousPeriodic() {
 	}
 
-	public void DiskBrakeEnable() {
-		System.out.println("Enabled");
-		SmartDashboard.putBoolean("diskBrakeStatus", true);
-		diskBrake.set(DoubleSolenoid.Value.kReverse);
-	}
-
-	public void DiskBrakeDisable() {
-		System.out.println("Disabled");
-		SmartDashboard.putBoolean("diskBrakeStatus", false);
-		diskBrake.set(DoubleSolenoid.Value.kForward);
-	}
-
 	public void teleopInit() {
+
 		// colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(2);
 
@@ -225,7 +235,9 @@ public class Robot extends TimedRobot {
 	}
 
 	public void teleopPeriodic() {
-		SmartDashboard.putNumber("testKey", testNumber++);
+
+		// Color Wheel
+
 		// Intake Sensor (31)
 		if (ColorWheelLimit.get() == true && !limitPressed) {
 			limitPressed = true;
@@ -243,68 +255,80 @@ public class Robot extends TimedRobot {
 		// LastColor = currentColor;
 		// }
 
+		// Reset Color CHanges Number
 		if (flightStickLeft.getRawButton(8)) {
 
 			colorChangsCount = 0;
 
 		}
+
+		// SHOOTER CODE #2
+
+		powerAxis = (Math.round(((((flightStickRight.getRawAxis(2) * -100) + 100) / 2))) / 100.0);
+
 		// Auto Shoot without limelight
-	//TODO
-		if (flightStickRight.getRawButton(2) && speedToggle == false ){
-			speedToggle = true;
-			preShooter.set(ControlMode.PercentOutput, 1.0f);
-			preShooterTwo.set(ControlMode.PercentOutput, 1.0f);
-			shooterFour.set(ControlMode.PercentOutput, 1.0f);
-			shooterThree.set(ControlMode.PercentOutput, 1.0f);
-		}else if (flightStickRight.getRawButton(2) && speedToggle == true ){
-			speedToggle = false;
-			preShooter.set(ControlMode.PercentOutput, 0.0f);
-			preShooterTwo.set(ControlMode.PercentOutput, 0.0f);
-			shooterFour.set(ControlMode.PercentOutput, 0.0f);
-			shooterThree.set(ControlMode.PercentOutput, 0.0f);
+		SmartDashboard.putNumber("Shooter_Speed", shooterTwo.getSelectedSensorVelocity());
+
+		if (flightStickRight.getRawButton(11)) {
+			// speedToggle = true;
+			// preShooterFour.set(ControlMode.PercentOutput, 0.25f * -1);
+			// preShooterSix.set(ControlMode.PercentOutput, 0.25f * -1);
+			shooterTwo.set(ControlMode.PercentOutput, 0.7f);
+			shooterFive.set(ControlMode.PercentOutput, 0.7f * -1);
+		} else {
+			// } else if (flightStickRight.getRawButton(2) && speedToggle == true) {
+			// speedToggle = false;
+			// preShooterFour.set(ControlMode.PercentOutput, 0.0f);
+			// preShooterSix.set(ControlMode.PercentOutput, 0.0f);
+			shooterTwo.set(ControlMode.PercentOutput, 0.0f);
+			shooterFive.set(ControlMode.PercentOutput, 0.0f);
+		}
+
+		// Manual Motor index drive
+		if (flightStickRight.getRawButton(10)) {
+
+			indexerThree.set(ControlMode.PercentOutput, 0.25f);
+
+		} else {
+			indexerThree.set(ControlMode.PercentOutput, 0.0f);
 		}
 
 		// Beam Break
-		if (flightStickRight.getRawButton(10)) {
+		// if (flightStickRight.getRawButton(10)) {
 
-			indexer.set(ControlMode.PercentOutput, 0.4f);
+		// indexerThree.set(ControlMode.PercentOutput, 0.4f);
 
-		} else {
-			if (beamBreak.get() == false) {
+		// } else {
+		// if (beamBreak.get() == false) {
 
-				if (beamReset) {
-					beamReset = false;
-					indexer.set(ControlMode.PercentOutput, 0.4f);
-					indexTimer.reset();
-					indexTimer.start();
-				}
+		// if (beamReset) {
+		// beamReset = false;
+		// indexerThree.set(ControlMode.PercentOutput, 0.4f);
+		// indexTimer.reset();
+		// indexTimer.start();
+		// }
 
-			} else {
-				beamReset = true;
-			}
+		// } else {
+		// beamReset = true;
+		// }
 
-			if (indexTimer.get() >= .2) {
+		// if (indexTimer.get() >= .2) {
 
-				indexer.set(ControlMode.PercentOutput, 0.0f);
+		// indexerThree.set(ControlMode.PercentOutput, 0.0f);
 
-			}
-		}
-
-
-
-
+		// }
+		// }
 
 		// Color Wheel Spin
-
 		if (flightStickLeft.getRawButton(9)) {
 
 			if (colorChangsCount <= 31) {// 25
 
-				climberOne.set(ControlMode.PercentOutput, 1.0f);
+				MotorSeven.set(ControlMode.PercentOutput, 1.0f);
 
 			} else {
 
-				climberOne.set(ControlMode.PercentOutput, 0.0f);
+				MotorSeven.set(ControlMode.PercentOutput, 0.0f);
 
 			}
 
@@ -312,11 +336,11 @@ public class Robot extends TimedRobot {
 
 			if (flightStickLeft.getRawButton(10)) {
 
-				climberOne.set(ControlMode.PercentOutput, 1.0f);
+				MotorSeven.set(ControlMode.PercentOutput, 1.0f);
 
 			} else {
 
-				climberOne.set(ControlMode.PercentOutput, 0.0f);
+				MotorSeven.set(ControlMode.PercentOutput, 0.0f);
 
 			}
 		}
@@ -326,48 +350,41 @@ public class Robot extends TimedRobot {
 
 			if (GetTargetColor() != LastColor) {
 
-				climberOne.set(ControlMode.PercentOutput, 1.0f);
+				MotorSeven.set(ControlMode.PercentOutput, 1.0f);
 
 			} else {
 
-				climberOne.set(ControlMode.PercentOutput, 0.0f);
+				MotorSeven.set(ControlMode.PercentOutput, 0.0f);
 
 			}
 
 		}
 
 		// Disk Break
-		if (flightStickRight.getRawButtonPressed(11)) {
+		// if (flightStickRight.getRawButtonPressed(11)) {
 
-			DiskBrakeEnable();
+		// DiskBrakeEnable();
 
-		} else if (flightStickRight.getRawButtonPressed(10)) {
+		// } else if (flightStickRight.getRawButtonPressed(10)) {
 
-			DiskBrakeDisable();
-		}
+		// DiskBrakeDisable();
 
-		SmartDashboard.putNumber("UltrasonicDown", 123.0);
-
-		double valueFromDashboard = SmartDashboard.getNumber("dashboard_key", 0.0);
-		boolean runShooter = SmartDashboard.getBoolean("RunShooter", false);
-		if (runShooter) {
-			// Run shooter motors
-		}
+		// }
 
 		// // Climber
 		// if (flightStickRight.getRawButton(9)) {
 
-		// climberOne.set(ControlMode.PercentOutput, 1.0f * -1);
-		// climberTwo.set(ControlMode.PercentOutput, 1.0f);
+		// MotorSeven.set(ControlMode.PercentOutput, 1.0f * -1);
+		// MotorEight.set(ControlMode.PercentOutput, 1.0f);
 
 		// } else if (flightStickRight.getRawButton(8)) {
 
-		// climberOne.set(ControlMode.PercentOutput, 1.0f);
-		// climberTwo.set(ControlMode.PercentOutput, 1.0f * -1);
+		// MotorSeven.set(ControlMode.PercentOutput, 1.0f);
+		// MotorEight.set(ControlMode.PercentOutput, 1.0f * -1);
 
 		// } else {
-		// climberOne.set(ControlMode.PercentOutput, 0);
-		// climberTwo.set(ControlMode.PercentOutput, 0);
+		// MotorSeven.set(ControlMode.PercentOutput, 0);
+		// MotorEight.set(ControlMode.PercentOutput, 0);
 		// }
 
 		// Limelight
@@ -441,69 +458,89 @@ public class Robot extends TimedRobot {
 		operator = new Joystick(1);
 		flightStickLeft = new Joystick(3);
 		flightStickRight = new Joystick(2);
-
 	}
 
 	public void testPeriodic() {
 
 		powerAxis = (Math.round(((((flightStickRight.getRawAxis(2) * -100) + 100) / 2))) / 100.0);
 
-		
-		// System.out.println(climberOne.getSelectedSensorPosition());
-		System.out.println(powerAxis);
+		boolean usePid = true;
 
-		// Shooter
-		if (flightStickRight.getRawButton(11)) {
-			preShooter.set(ControlMode.PercentOutput, 1.0f);
-			climberOne.set(ControlMode.PercentOutput, 1.0f * -1);
-			climberTwo.set(ControlMode.PercentOutput, 1.0f);
-			shooterThree.set(ControlMode.PercentOutput, 1.0f * -1);
-			shooterFour.set(ControlMode.PercentOutput, 1.0f);
+		// rpm pid
+		if (usePid) {
+			float rpm = TalonVelocityToRPM(shooterTwo.getSelectedSensorVelocity(), 1.0f);
+			SmartDashboard.putNumber("Shooter_RPM", rpm);
 
-		} else if (flightStickRight.getRawButton(10)) {
+			shooterP = SmartDashboard.getNumber(shooterPKey, shooterP);
+			shooterI = SmartDashboard.getNumber(shooterIKey, shooterI);
+			shooterD = SmartDashboard.getNumber(shooterDKey, shooterD);
+			shooterRPMTarget = SmartDashboard.getNumber(shooterRPMKey, shooterRPMTarget);
 
-			preShooter.set(ControlMode.PercentOutput, 1.0f);
-			climberOne.set(ControlMode.PercentOutput, 0.25f * -1);
-			climberTwo.set(ControlMode.PercentOutput, 0.25f);
-			shooterThree.set(ControlMode.PercentOutput, 0.25f * -1);
-			shooterFour.set(ControlMode.PercentOutput, 0.25f);
+			shooterPid.setP(shooterP);
+			shooterPid.setI(shooterI);
+			shooterPid.setD(shooterD);
 
-		} else if (flightStickRight.getRawButton(6)) {
+			double motorSpeed = shooterPid.calculate(rpm, shooterRPMTarget);
 
-			preShooter.set(ControlMode.PercentOutput, 1.0f);
-			shooterThree.set(ControlMode.PercentOutput, powerAxis * -1);
-			shooterFour.set(ControlMode.PercentOutput, powerAxis);
-			climberOne.set(ControlMode.PercentOutput, powerAxis * -1);
-			climberTwo.set(ControlMode.PercentOutput, powerAxis);
+			System.out.println("Speed " + motorSpeed + " RPM " + rpm);
 
+			ShooterPower((float) motorSpeed, 0.0f);
 		} else {
 
-			preShooter.set(ControlMode.PercentOutput, 0);
-			climberOne.set(ControlMode.PercentOutput, 0);
-			climberTwo.set(ControlMode.PercentOutput, 0);
-			shooterThree.set(ControlMode.PercentOutput, 0);
-			shooterFour.set(ControlMode.PercentOutput, 0);
+			// Shooter
+			if (flightStickRight.getRawButton(11)) {
+				ShooterPower(1.0f, 1.0f);
+			} else if (flightStickRight.getRawButton(10)) {
+				ShooterPower(0.25f, 1.0f);
+			} else if (flightStickRight.getRawButton(6)) {
+				ShooterPower((float) powerAxis, 1.0f);
+			} else {
+				ShooterPower(0.0f, 0.0f);
+			}
 		}
 
 		// Encoder
 		float oldSpeed = encoderSpeed1;
 
-		encoderSpeed1 = climberOne.getSelectedSensorVelocity();
+		encoderSpeed1 = MotorSeven.getSelectedSensorVelocity();
 		// System.out.println(encoderSpeed1);
 
 		if (oldSpeed != encoderSpeed1) {
 
-			SmartDashboard.putNumber("encoderSpeed1", encoderSpeed1);
+			// SmartDashboard.putNumber("encoderSpeed1", encoderSpeed1);
 
 		}
 
-		// encoderSpeed2 = climberTwo.getSelectedSensorVelocity();
+		// encoderSpeed2 = MotorEight.getSelectedSensorVelocity();
 		// System.out.println("climber two" + encoderSpeed2);
 
 		ControllerDrive();
 		UpdateMotors();
 
 	}
+
+	public void ControllerDrive() {
+		if (arcadeDrive) {
+
+			// Arcade
+			float horJoystick = TranslateController((float) driver.getRawAxis(4));
+			float verJoystick = TranslateController((float) driver.getRawAxis(1));
+
+			driveTrain.SetRightSpeed(-verJoystick + -horJoystick);
+			driveTrain.SetLeftSpeed(-verJoystick + horJoystick);
+			driveTrain.SetCoast();
+		} else {
+
+			// tank
+			float leftJoystick = DriveScaleSelector((float) flightStickLeft.getRawAxis(1), DriveScale.linear);
+			float rightJoystick = DriveScaleSelector((float) flightStickRight.getRawAxis(1), DriveScale.linear);
+
+			driveTrain.SetRightSpeed(-rightJoystick);
+			driveTrain.SetLeftSpeed(-leftJoystick);
+			driveTrain.SetCoast();
+		}
+	}
+
 	/*
 	 * public ColorWheel GetCurrentColor() {
 	 * 
@@ -557,26 +594,17 @@ public class Robot extends TimedRobot {
 		return output;
 	}
 
-	public void ControllerDrive() {
-		if (arcadeDrive) {
+	// DiskBrake
+	public void DiskBrakeEnable() {
+		System.out.println("Enabled");
+		SmartDashboard.putBoolean("diskBrakeStatus", true);
+		diskBrake.set(DoubleSolenoid.Value.kReverse);
+	}
 
-			// Arcade
-			float horJoystick = TranslateController((float) driver.getRawAxis(4));
-			float verJoystick = TranslateController((float) driver.getRawAxis(1));
-
-			driveTrain.SetRightSpeed(-verJoystick + -horJoystick);
-			driveTrain.SetLeftSpeed(-verJoystick + horJoystick);
-			driveTrain.SetCoast();
-		} else {
-
-			// tank
-			float leftJoystick = DriveScaleSelector((float) flightStickLeft.getRawAxis(1), DriveScale.linear);
-			float rightJoystick = DriveScaleSelector((float) flightStickRight.getRawAxis(1), DriveScale.linear);
-
-			driveTrain.SetRightSpeed(-rightJoystick);
-			driveTrain.SetLeftSpeed(-leftJoystick);
-			driveTrain.SetCoast();
-		}
+	public void DiskBrakeDisable() {
+		System.out.println("Disabled");
+		SmartDashboard.putBoolean("diskBrakeStatus", false);
+		diskBrake.set(DoubleSolenoid.Value.kForward);
 	}
 
 	public float Lerp(float v0, float v1, float t) {
@@ -609,17 +637,21 @@ public class Robot extends TimedRobot {
 		return ColorWheel.Unknown;
 	}
 
-	// RPM Caculator
-	public float ticksToRPM(float ticks, float gearBoxReduction) {
-		// Ticks is encoder measurment of distance 1024 ticks per revolution.
-		// gearBoxReduction is the reduction AFTER the encoder to the object that you
-		// want
-		// to caculate the RPMs for.
-		// Multiply by six hundred because time was measured in 1 milli seconds.
-		// Basing off of Vexpro VersaPlanetary gearbox system.
-		float rpm = (((ticks / 1024) * 600) / gearBoxReduction);
+	// Shooter Motors
+	public void ShooterPower(float power, float preshooterpower) {
 
-		return rpm;
+		preShooterFour.set(ControlMode.PercentOutput, preshooterpower);
+		MotorSeven.set(ControlMode.PercentOutput, power * -1);
+		MotorEight.set(ControlMode.PercentOutput, power);
+		shooterFive.set(ControlMode.PercentOutput, power * -1);
+		shooterTwo.set(ControlMode.PercentOutput, power);
+
+	}
+
+	// RPM Caculator
+	public float TalonVelocityToRPM(float ticks, float gearBoxReduction) {
+		float rpm = ((ticks / 4652) * 600);
+		return Math.abs(rpm);
 	}
 
 }

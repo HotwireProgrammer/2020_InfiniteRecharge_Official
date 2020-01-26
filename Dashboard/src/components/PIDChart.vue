@@ -35,14 +35,14 @@ export default {
 
     mounted: function() {
         this.setRpmGoal(this.rpmGoalVal);
-        NetworkTables.addKeyListener('/SmartDashboard/encoderSpeed1', this.addSpeedvalue);
-        setInterval(() => {
-            this.rpmData.push(addData(this.rpmData));
-            console.log(this.rpmData.length);
-            if(this.rpmData.length > 1000) {
-                this.rpmData.shift();
-            }
-        }, 10);
+        NetworkTables.addKeyListener('/SmartDashboard/Shooter_RPM', this.addSpeedvalue);
+        // setInterval(() => {
+        //     this.rpmData.push(addData(this.rpmData));
+        //     console.log(this.rpmData.length);
+        //     if(this.rpmData.length > 1000) {
+        //         this.rpmData.shift();
+        //     }
+        // }, 10);
         // setInterval(() => {
         //     let data = [this.series[0].data];
         //     data[0].shift();
@@ -65,8 +65,9 @@ export default {
     },
     methods: {
         addSpeedvalue: function(key, newSpeed) {
-            console.log('newSpeed', newSpeed);
+            // console.log('newSpeed', newSpeed);
             let time = new Date();
+            this.rpmData.push(newSpeed)
             // let data = [this.series[0].data];
             // data[0].shift();
             // data[0].push([time, parseInt(this.rpmGoalVal)]);
@@ -76,17 +77,18 @@ export default {
             // tmp.push([time, newSpeed*-1]);
             // data.push(tmp);
 
-            this.$children[0].appendData([{
-                data: [[time, newSpeed*-1]]
-            }]);
+            // this.$children[0].appendData([{
+            //     data: [[time, newSpeed*-1]]
+            // }]);
         },
         setRpmGoal: function(newGoal) {
             this.rpmGoalVal = newGoal;
         },
         send: function() {
-            NetworkTables.putValue('/SmartDashboard/encoderSpeed1-p', this.pVal);
-            NetworkTables.putValue('/SmartDashboard/encoderSpeed1-i', this.iVal);
-            NetworkTables.putValue('/SmartDashboard/encoderSpeed1-d', this.dVal);
+            NetworkTables.putValue('/SmartDashboard/Shooter_I', this.iVal);
+            NetworkTables.putValue('/SmartDashboard/Shooter_D', this.dVal);
+            NetworkTables.putValue('/SmartDashboard/Shooter_P', this.pVal);
+            NetworkTables.putValue('/SmartDashboard/Shooter_RPMTarget', this.rpmGoalVal);
             console.log('p', this.pVal);
             console.log('i', this.iVal);
             console.log('d', this.dVal);
@@ -102,7 +104,7 @@ export default {
                 name: 'RPMs',
                 data: []
             }],
-            rpmData: [0, 2, 5, 9, 5, 10, 3, 5, 0, 0, 1, 8, 2, 9, 0],
+            rpmData: [],
             chartOptions: {
                 chart: {
                     animations: {
