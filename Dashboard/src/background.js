@@ -175,6 +175,7 @@ function RobotClientConnections() {
     });
     ipcMain.on('update', (event, mesg) => {
         logger.logEvent('ICP: Update ' + mesg);
+        console.log(mesg)
         client.Update(mesg.id, mesg.val);
     });
     ipcMain.on('windowError', (event, error) => {

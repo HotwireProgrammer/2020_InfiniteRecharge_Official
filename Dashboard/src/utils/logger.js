@@ -42,8 +42,9 @@ export async function logEvent(event) {
 }
 
 export async function logData(key, data) {
-    // const msg = `${new Date().toLocaleTimeString()} :: ${key} :: ${data}`;
-    // console.log('Data ', msg);
+    if (key.indexOf('/SmartDashboard/') !== -1) {
+        key = key.replace('/SmartDashboard/', '');
+    }
 
     const dataLogPath = `${basePath}/data/${key}.log`
     data += ',';

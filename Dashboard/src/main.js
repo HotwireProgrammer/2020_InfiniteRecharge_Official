@@ -11,7 +11,6 @@ Vue.config.productionTip = false
 // IP address of the robot
 const IP_ADDRESS = '10.29.90.2';
 const retryFreq = 10; //In seconds
-let isRobotConnected = false;
 
 
 new Vue({
@@ -20,16 +19,14 @@ new Vue({
     mounted() {
         logger.logEvent('MOUNTED');
         NetworkTables.addRobotConnectionListener(onRobotConnection, false);
-        isRobotConnected = NetworkTables.isRobotConnected();
-        if (!isRobotConnected) {
+        if (!NetworkTables.isRobotConnected()) {
             setTimeout(this.connectionRetry, 1000);
         }
-        NetworkTables.addKeyListener('/SmartDashboard/UltrasonicDown', consoleListener);
     },
     methods: {
         connectionRetry: function () {
             // If the robot is connected do nothing
-            if (isRobotConnected) return;
+            if (NetworkTables.isRobotConnected()) return;
 
             // If no connection, try to connect again and then check again in 1 second
             logger.logEvent('Attepting robot connection to: ' + IP_ADDRESS);

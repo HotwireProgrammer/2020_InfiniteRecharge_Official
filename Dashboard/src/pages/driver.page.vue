@@ -87,6 +87,12 @@ export default {
         <ControlButton class="auto-button" label="Reach Up" networkKey="reach up" />
         <ControlButton class="auto-button" label="Toggle Intake" networkKey="toggle intake" />
         <ControlButton class="auto-button" label="Set Color" networkKey="set color" />
+                <v-btn
+            class="auto-button"
+            outlined
+            color="primary"
+            height="55"
+            @click="endMatch()">End MAtch</v-btn>
     </div>
 </v-container>
 </template>
