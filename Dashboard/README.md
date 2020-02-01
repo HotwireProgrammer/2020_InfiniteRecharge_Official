@@ -18,3 +18,6 @@ https://apexcharts.com/
 
 Component library docs
 https://vuetifyjs.com/en/components/api-explorer
+
+Simple Charts
+https://www.npmjs.com/package/vuetrend

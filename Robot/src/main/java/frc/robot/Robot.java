@@ -514,6 +514,15 @@ public class Robot extends TimedRobot {
 		// encoderSpeed2 = MotorEight.getSelectedSensorVelocity();
 		// System.out.println("climber two" + encoderSpeed2);
 
+		// Manual Motor index drive
+		if (flightStickRight.getRawButton(10)) {
+
+			indexerThree.set(ControlMode.PercentOutput, 0.25f);
+
+		} else {
+			indexerThree.set(ControlMode.PercentOutput, 0.0f);
+		}
+
 		ControllerDrive();
 		UpdateMotors();
 

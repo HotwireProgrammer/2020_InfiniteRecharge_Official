@@ -141,6 +141,7 @@ export default {
             logger.logData('voltD', data[4][data[4].length-1])
             logger.logData('voltE', data[5][data[5].length-1])
 
+            debugger;
 
             this.$children[0].updateSeries([{
                 name: 'Danger Level',
@@ -170,6 +171,7 @@ export default {
 
 <template>
     <div>
-        <apexchart type=line width=850 :options="chartOptions" :series="series" />
+        <apexchart type=line width=850 :options="chartOptions" :series="series" />   
+        <v-checkbox v-model="showVoltage" label="Voltage"></v-checkbox>
     </div>
 </template>

@@ -2,13 +2,16 @@
 import { NetworkTables } from '../utils/networktables'
 import ControlButton from '../components/ControlButton'
 import Indicator from '../components/Indicator'
+import BallCounter from '../components/BallCounter'
+import MotorChart from '../components/MotorChart'
 
 import * as logger from '../utils/logger'
+
 
 export default {
     name: 'DriverPage',
 
-    components: {ControlButton, Indicator},
+    components: {ControlButton, Indicator, BallCounter, MotorChart},
 
     data: function() {
         return {
@@ -54,6 +57,7 @@ export default {
 
 <template>
 <v-container class="fill-height" fluid>
+    <MotorChart class="chart" />
 
     <div class="video"></div>
 
@@ -94,6 +98,7 @@ export default {
             height="55"
             @click="endMatch()">End MAtch</v-btn>
     </div>
+    <BallCounter /> 
 </v-container>
 </template>
 
@@ -102,6 +107,10 @@ export default {
     .auto-button {
         margin-left: 20px;
         margin-bottom: 3px;
+    }
+
+    .chart {
+        width: 1000px;
     }
 
     .auto-dropdown {

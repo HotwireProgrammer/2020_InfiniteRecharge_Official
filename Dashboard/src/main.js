@@ -13,6 +13,11 @@ const IP_ADDRESS = '10.29.90.2';
 const retryFreq = 10; //In seconds
 
 
+// import Vue from 'vue';
+import zingchartVue from 'zingchart-vue';
+
+Vue.component('zingchart', zingchartVue)
+
 new Vue({
     vuetify,
     render: h => h(App),

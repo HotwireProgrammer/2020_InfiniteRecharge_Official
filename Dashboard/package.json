@@ -24,9 +24,11 @@
     "roboto-fontface": "*",
     "vue": "^2.6.10",
     "vue-apexcharts": "^1.5.1",
+    "vue-google-charts": "^0.3.2",
     "vuetify": "^2.1.0",
     "vuetrend": "^0.3.4",
-    "wpilib-nt-client": "^1.7.1"
+    "wpilib-nt-client": "^1.7.1",
+    "zingchart-vue": "^1.0.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.0.0",

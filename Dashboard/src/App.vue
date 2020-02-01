@@ -6,6 +6,11 @@ import DetailedPage from './pages/detailed.page';
 import { NetworkTables } from './utils/networktables'
 // import * as logger from './utils/logger'
 
+import Vue from 'vue';
+import VueGoogleCharts from 'vue-google-charts'
+
+Vue.use(VueGoogleCharts)
+
 export default {
     name: 'App',
 
