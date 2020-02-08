@@ -47,6 +47,10 @@ export default {
         }
     },
     methods: {
+        updateAutoModes: function(auto){
+            NetworkTables.putValue("/SmartDashboard/autoMode", auto);
+        },
+
         endMatch: function() {
             console.log("CLIMB  - ",  true);
             logger.endMatchProcessing();
@@ -81,6 +85,7 @@ export default {
             color="primary"
             item-color="primary"
             class="auto-dropdown"
+            @change="updateAutoModes" 
         ></v-select>
         <ControlButton class="auto-button" label="Start Auto" networkKey="start auto" />
     </div>
