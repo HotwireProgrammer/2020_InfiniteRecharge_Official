@@ -38,7 +38,7 @@ export default {
 
 <template>
 <v-app>
-    <v-navigation-drawer v-model="drawer" app>
+    <v-navigation-drawer v-model="drawer" app floating disable-resize-watcher temporary>
         <v-list-item class="nav-line" link @click="menuClick('Driver')">
             <v-icon>mdi-home</v-icon>
             <span class="nav-text">Driver</span>
@@ -58,23 +58,6 @@ export default {
         <DriverPage v-if="currentPage==='Driver'" />
         <DetailedPage v-if="currentPage==='Detailed'" />
     </v-content>
-
-    <v-bottom-navigation v-model="bottomNav" class="bottom-nav">
-        <v-btn value="recent" @click="toggleBtnClicked()">
-            <span>Toggle Robot</span>
-            <v-icon>mdi-power</v-icon>
-        </v-btn>
-
-        <v-btn value="favorites">
-            <span>Shoot Back</span>
-            <v-icon>mdi-arrow-down-bold-hexagon-outline</v-icon>
-        </v-btn>
-
-        <v-btn value="nearby">
-            <span>Shoot Forward</span>
-            <v-icon>mdi-arrow-up-bold-hexagon-outline</v-icon>
-        </v-btn>
-    </v-bottom-navigation>
 </v-app>
 </template>
 

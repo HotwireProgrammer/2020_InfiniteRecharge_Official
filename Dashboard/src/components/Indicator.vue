@@ -27,7 +27,8 @@ export default {
         icon: {
             type: String,
             required: true
-        }
+        },
+        spin: Boolean
     },
     methods: {
         updateIndicator: function(key, newValue) {
@@ -44,7 +45,7 @@ export default {
 
 <template>
 <div>
-    <v-icon class="icon" v-bind:color="color" large>mdi-{{icon}}</v-icon>
+    <v-icon class="icon" v-bind:class="{'mdi-spin': this.status&&this.spin}" v-bind:color="color" large>mdi-{{icon}}</v-icon>
     <span v-bind:style="'color:'+color">{{label}}</span>
 </div>
 </template>
