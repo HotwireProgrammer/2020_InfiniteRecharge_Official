@@ -18,7 +18,7 @@ export default {
     data: () => ({ icon: 'football'}),
     methods: {
         activateFunction: function() {
-            NetworkTables.putValue(this.networkKey, true);
+            NetworkTables.putValue('/SmartDashboard/' + this.networkKey, true);
             console.log("FUNCTION ACTIVATED - ",  this.networkKey);
         },
     }
