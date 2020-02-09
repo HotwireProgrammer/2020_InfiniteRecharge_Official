@@ -15,13 +15,10 @@ import frc.robot.DriveTrain;
 public abstract class AutoStep {
 
     public boolean isDone;
-    public DriveTrain driveTrain;
 
-    public AutoStep(DriveTrain driveTrain)
+    public AutoStep()
     {
         isDone = false;
-
-        this.driveTrain = driveTrain;
     }
 
     public abstract void Begin();
