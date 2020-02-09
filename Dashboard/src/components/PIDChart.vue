@@ -84,7 +84,6 @@ export default {
 <template>
   <div>
     <trend :data="rpmData" auto-draw :gradient="['#ff3d00']"></trend>
-    <trend :data="rpmGoalData" auto-draw :gradient="['#ffff3d']" class="rpm-goal"></trend>
     <v-row no-gutters>
       <v-col cols="1">
         <v-text-field label="P" v-model="pVal"></v-text-field>
@@ -106,10 +105,10 @@ export default {
       </v-col>
     </v-row>
     <v-row>
-      <v-col>
+      <v-col cols="2">
           Speed: {{Math.floor(speedvalue * 100)}} %
       </v-col>
-      <v-col>
+      <v-col cols="2">
           RPMs: <span :class="isInTolerance ? 'acceptable' :'' ">{{Math.floor(rpmData[rpmData.length - 1])}}</span>
       </v-col>
     </v-row>

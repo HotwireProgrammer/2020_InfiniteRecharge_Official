@@ -11,15 +11,24 @@ export default {
          networkKey: {
             type: String,
             required: true
-        }
+        },
+        togglable: Boolean
     },
-    components: {},
 
-    data: () => ({ icon: 'football'}),
+    data: () => ({
+        toggled: false
+    }),
+
+    mounted: function() {
+        NetworkTables.getValue('/SmartDashboard/' + this.networkKey, false);
+    },
+
     methods: {
         activateFunction: function() {
+            if (this.togglable) {
+                this.toggled = !this.toggled;
+            }
             NetworkTables.putValue('/SmartDashboard/' + this.networkKey, true);
-            console.log("FUNCTION ACTIVATED - ",  this.networkKey);
         },
     }
 };
@@ -28,10 +37,26 @@ export default {
 <template>
     <div>
         <v-btn
-            class="auto-button"
-            outlined
+            class="control-button"
             color="primary"
             height="55"
-            @click="activateFunction()">{{label}}</v-btn>
+            :input-value="toggled"
+            outlined
+            @click="activateFunction()">
+            
+                {{label}}
+        </v-btn>
     </div>
 </template>
+
+
+<style scoped lang="scss">
+    .toggled-on {
+        background-color: black;
+    }
+    
+    .control-button {
+        margin-left: 20px;
+        margin-bottom: 3px;
+    }
+</style>

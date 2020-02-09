@@ -19,7 +19,6 @@ export default {
     methods: {
         ballUpdate: function(key, value) {
             this.ballVal = value;
-
         },
 
         validator: function(value) {
@@ -32,14 +31,49 @@ export default {
 
 <template>
 <div>
-    <v-text-field :rules="[this.validator]" label="Balls" v-model="ballVal"></v-text-field>
+    <v-icon class="up-icon" @click="ballVal++" large>mdi-arrow-up-bold</v-icon>
+    <span 
+        class="counter-field"
+        :class="{ warn: ballVal===4, ready: ballVal===5, stop: ballVal>5 }"
+    >
+        {{ballVal}}
+    </span>
+    <v-icon class="down-icon" @click="ballVal--" large>mdi-arrow-down-bold</v-icon>
+<!--
+    <v-text-field 
+        class="counter-field" 
+        height="90px"
+        :rules="[this.validator]" 
+        label="Ball Count"
+        v-model="ballVal"
+    ></v-text-field> 
+-->
 </div>
 </template>
 
 <style scoped lang="scss">
 
-.icon {
-    margin-right: 10px;
+.up-icon {
+    margin-top: -30px;
+    cursor: pointer;
+}
+.down-icon {
+    margin-top: -20px;
+    cursor: pointer;
+}
+.counter-field {
+    width: 70px;
+    font-size: 56px;
+
+    &.warn {
+        color: #ffff3d;
+    }
+    &.ready {
+        color: #009688;
+    }
+    &.stop {
+        color: #f44336;
+    }
 }
 
 </style>
