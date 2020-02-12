@@ -1,9 +1,7 @@
 <script>
 import { NetworkTables } from '../utils/networktables'
-import ControlButton from '../components/ControlButton'
 import Indicator from '../components/Indicator'
 import BallCounter from '../components/BallCounter'
-// import MotorChart from '../components/MotorChart'
 
 import * as logger from '../utils/logger'
 
@@ -12,16 +10,18 @@ export default {
     name: 'DriverPage',
 
     components: {
-        ControlButton,
         Indicator,
         BallCounter,
-        // MotorChart
     },
 
     data: function() {
         return {
             autoModeValue: 0,
             colorSelectionValue: 0,
+            robotConnected: false,
+            shootingWheelToggled: false,
+            shootingWheelTarget: 0,
+            shootingWheelSpeed: 0,
             autoModes: [
                 {
                     text: 'Basic Mode',
@@ -32,21 +32,6 @@ export default {
                 },{
                     text: 'Super Mode',
                     value: 2
-                }
-            ],
-            colorModes: [
-                {
-                    text: 'Red',
-                    value: 0
-                },{
-                    text: 'Yellow',
-                    value: 1
-                },{
-                    text: 'Blue',
-                    value: 2
-                },{
-                    text: 'Green',
-                    value: 3
                 }
             ]
         }
@@ -61,58 +46,57 @@ export default {
         },
 
         endMatch: function() {
-            console.log("CLIMB  - ",  true);
+            console.log("End Match  - ",  true);
             logger.endMatchProcessing();
         }
     },
+    mounted: function() {
+        NetworkTables.addRobotConnectionListener(
+            (connected) => this.robotConnected = connected,
+            true
+        );
+
+        NetworkTables.addKeyListener(
+            "/SmartDashboard/Shooter_RPMTarget",
+            (k, val) => {
+                this.shootingWheelToggled = val > 0;
+                shootingWheelTarget = val;
+            }
+        );
+
+        NetworkTables.addKeyListener(
+            "/SmartDashboard/Shooter_Speed",
+            (k, val) => {
+                this.shootingWheelReady = val > 0;
+                shootingWheelSpeed = val;
+            }
+        );
+    }
 };
 </script>
 
 <template>
 <v-container class="fill-height" fluid>
-    <!-- <MotorChart class="chart" /> -->
 
     <v-row no-gutters>
         <v-col cols="6">
             <video class="video">
-                <source src="http://limelight.10.29.90.2:5801" type="video/mp4">
+                <source src="http://10.29.90.2:5800" type="video/mp4">
             </video>
         </v-col>
-        <v-col cols="2">
-            <div class="indicators">
-                <indicator icon="car-connected" label="Robot Connected" networkKey="diskBrakeStatus"/>
-                <indicator icon="robot" label="Robot Enabled" networkKey="diskBrakeStatus"/>
-                <indicator icon="robot-mower" label="Intake on" networkKey="intakeOn"/>
-                <indicator icon="robot-industrial" label="Intake Down" networkKey="intakeExtended"/>
-                <indicator icon="elevator-up" label="Climbing" networkKey="diskBrakeStatus"/>
-                <indicator icon="transfer-up" label="Climber Extending" networkKey="diskBrakeStatus"/>
-                <indicator icon="ship-wheel" label="Spinning Wheel" spin networkKey="diskBrakeStatus"/>
-                <indicator icon="latitude" label="Shooter Spinning" spin networkKey="diskBrakeStatus"/>
-                <indicator icon="share-all" label="Shooter Ready" networkKey="diskBrakeStatus"/>
-                <BallCounter /> 
-
-            </div>
+        <v-col cols="3">
+            <indicator class="indicator" icon="car-connected" label="Robot Connected" v-bind:toggledValue="this.robotConnected"/>
+            <indicator class="indicator" icon="robot" label="Robot Enabled" networkKey="TODO_KEY"/>
+            <indicator class="indicator" icon="robot-mower" label="Intake on" networkKey="intakeMotor"/>
+            <indicator class="indicator" icon="robot-industrial" label="Intake Down" networkKey="intakeExtended"/>
+            <indicator class="indicator" icon="elevator-up" label="Climbing" networkKey="TODO_KEY"/>
         </v-col>
-        <v-col cols="4">
-            <div class="actions">
-                <ControlButton togglable label="Toggle Shooter Wheel" networkKey="toggle shooter" />
-                <ControlButton label="Shoot Balls" networkKey="toggle shooter" />
-                <ControlButton togglable label="Climb" networkKey="climb" />
-                <ControlButton label="Reach up" networkKey="reach up" />
-                <ControlButton togglable label="Raise/lower Intake" networkKey="toggle intake" />
-                <ControlButton label="Spin Color Wheel" networkKey="spin color wheel" />
-                <ControlButton label="Set Color" networkKey="set color" />
-                <!--
-                <v-btn
-                    class="auto-button"
-                    outlined
-                    color="primary"
-                    height="55"
-                    @click="endMatch()">
-                        End Match
-                </v-btn>
-                -->
-            </div>
+        <v-col cols="3">
+            <indicator class="indicator" icon="transfer-up" label="Climber Extending" networkKey="TODO_KEY"/>
+            <indicator class="indicator" icon="ship-wheel" label="Spinning Wheel" spin networkKey="TODO_KEY"/>
+            <indicator class="indicator" icon="latitude" label="Shooter Spinning" spin v-bind:toggledValue="shootingWheelToggled"/>
+            <indicator class="indicator" icon="share-all" label="Shooter Ready" v-bind:toggledValue="shootingWheelSpeed"/>
+            <BallCounter /> 
         </v-col>
     </v-row>
     <v-row no-gutters>
@@ -130,13 +114,16 @@ export default {
                 ></v-select>
                 <img class="field-img" v-bind:src="getImgSrc()" />
             </div>
-            
         </v-col>
     </v-row>
 </v-container>
 </template>
 
 <style scoped lang="scss">
+    .indicator {
+        margin-bottom: 20px;
+        font-size: 35px;
+    }
     .chart {
         width: 1000px;
     }
@@ -154,8 +141,8 @@ export default {
     }
 
     .video {
-        width: 600px;
-        height: 450px;
-        background: yellow;
+        width:95%;
+        // height: 450px;
+        // background: yellow;
     }
 </style>

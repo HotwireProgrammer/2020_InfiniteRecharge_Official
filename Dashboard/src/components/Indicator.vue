@@ -6,21 +6,15 @@ export default {
 
     components: {},
     mounted:function(){
-        NetworkTables.addKeyListener('/SmartDashboard/' + this.networkKey, this.updateIndicator);
-
-},
-    data: () => (
-        {
-            status: false,
-            color: 'white'
+        if (this.networkKey) {
+            NetworkTables.addKeyListener('/SmartDashboard/' + this.networkKey, this.updateIndicator);
         }
+    },
+    data: () => (
+        {}
     ),
     props: {
         label: {
-            type: String,
-            required: true
-        },
-         networkKey: {
             type: String,
             required: true
         },
@@ -28,16 +22,13 @@ export default {
             type: String,
             required: true
         },
+        networkKey: String,
+        status: Boolean,
         spin: Boolean
     },
     methods: {
         updateIndicator: function(key, newValue) {
             this.status = newValue;
-            if(newValue){
-                this.color='#00ff4e'
-            }else{
-                this.color='white'
-            }
         },
     }
 };
@@ -45,8 +36,14 @@ export default {
 
 <template>
 <div>
-    <v-icon class="icon" v-bind:class="{'mdi-spin': this.status&&this.spin}" v-bind:color="color" large>mdi-{{icon}}</v-icon>
-    <span v-bind:style="'color:'+color">{{label}}</span>
+    <v-icon 
+        class="icon"
+        v-bind:class="{'mdi-spin': this.status && this.spin}"
+        v-bind:color="status ? '#00ff4e' : 'white'"
+        x-large>
+            mdi-{{icon}}
+    </v-icon>
+    <span v-bind:style="'color:' + status ? '#00ff4e' : 'white'">{{label}}</span>
 </div>
 </template>
 

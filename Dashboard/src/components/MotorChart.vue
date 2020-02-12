@@ -1,45 +1,71 @@
 <script>
 import { NetworkTables } from '../utils/networktables'
 import zingchartVue from 'zingchart-vue';
+let intermVolta = [];
+
 
 export default {
     name: 'MotorChart',
 
-    components: {zingchartVue},
+    components: { zingchartVue },
     mounted:function(){
-     //   NetworkTables.addKeyListener('/SmartDashboard/' + this.networkKey, this.updateIndicator);
-
-},
+    //    NetworkTables.addKeyListener('/SmartDashboard/volta', this.updateIndicator);
+        setInterval(() => intermVolta.push(3), 300);
+    },
+    methods: {
+        addIntermVolta(key, value) {
+            intermVolta.push()
+        },
+        updateGraph(callback) {
+            console.log('called');
+            // let retval = [];
+            let retval = {
+                    plot0: intermVolta[i],
+                    plot1: intermVolta[i]
+                };
+            intermVolta.forEach((val, i) => {
+                retval.push({
+                    plot0: intermVolta[i],
+                    plot1: intermVolta[i]
+                });
+            });
+            callback(JSON.stringify(retval));
+        }
+    },
     data: () => (
-        {   
-           chartData: {
+        {
+            chartData: {
                 type: 'line',
 
                 legend:{ 
-                    header:{
-                    text:"Header"
-                },
-                footer:{
-                    text:"Footer"
-                },
-                    "max-items":3,
+                        header:{
+                        text:"Header"
+                    },
+                    footer:{
+                        text:"Footer"
+                    },
                     overflow:"page",
-
+                },
+                refresh: {
+                    type: 'feed',
+                    transport: 'js',
+                    url: 'updateGraph()',
+                    interval: 500,
+                    maxTicks: 20
                 },
 
-                series: [{
-                    values: [4,5,3,3,4,9],
-                    text : "Test"
-                },{
-                    values: [5,9,4,5,3,3,4,9],
-                    text : "Test2"
-                }]
+                series: [
+                    {
+                        values: [],
+                        text : "Test"
+                    },{
+                        values: [5,9,4,5,3,3,4,9],
+                        text : "Test2"
+                    }
+                ]
             }
         }
-    ),
-
-    methods: {
-    }
+    )
 };
 </script>
 
