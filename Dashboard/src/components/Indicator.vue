@@ -11,7 +11,7 @@ export default {
         }
     },
     data: () => (
-        {}
+        { toggledOn: false }
     ),
     props: {
         label: {
@@ -29,6 +29,7 @@ export default {
     methods: {
         updateIndicator: function(key, newValue) {
             this.status = newValue;
+            this.toggledOn = newValue;
         },
     }
 };
@@ -39,11 +40,11 @@ export default {
     <v-icon 
         class="icon"
         v-bind:class="{'mdi-spin': this.status && this.spin}"
-        v-bind:color="status ? '#00ff4e' : 'white'"
+        v-bind:color="status || toggledOn ? '#00ff4e' : 'white'"
         x-large>
             mdi-{{icon}}
     </v-icon>
-    <span v-bind:style="'color:' + status ? '#00ff4e' : 'white'">{{label}}</span>
+    <span v-bind:class="{ active: status || toggledOn }">{{label}}</span>
 </div>
 </template>
 
@@ -51,6 +52,10 @@ export default {
 
 .icon {
     margin-right: 10px;
+}
+
+.active {
+    color: #00ff4e;
 }
 
 </style>

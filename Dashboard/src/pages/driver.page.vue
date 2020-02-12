@@ -60,7 +60,7 @@ export default {
             "/SmartDashboard/Shooter_RPMTarget",
             (k, val) => {
                 this.shootingWheelToggled = val > 0;
-                shootingWheelTarget = val;
+                this.shootingWheelTarget = val;
             }
         );
 
@@ -68,7 +68,7 @@ export default {
             "/SmartDashboard/Shooter_Speed",
             (k, val) => {
                 this.shootingWheelReady = val > 0;
-                shootingWheelSpeed = val;
+                this.shootingWheelSpeed = val;
             }
         );
     }
@@ -142,7 +142,5 @@ export default {
 
     .video {
         width:95%;
-        // height: 450px;
-        // background: yellow;
     }
 </style>
