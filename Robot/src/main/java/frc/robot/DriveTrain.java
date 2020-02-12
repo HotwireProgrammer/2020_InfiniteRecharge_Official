@@ -15,10 +15,10 @@ public class DriveTrain implements PIDOutput {
 	PIDController turnController;
 
 	public DriveTrain(int pwm1, int pwm2, int pwm3, int pwm4, AHRS navx) {
-		joshmotorcontrollorLeftBottomOne = new JoshMotorControllor(pwm1, lerpSpeed, false);
-		joshmotorcontrollorLeftBottomTwo = new JoshMotorControllor(pwm2, lerpSpeed, false);
-		joshmotorcontrollorRightBottomOne = new JoshMotorControllor(pwm3, lerpSpeed, false);
-		joshmotorcontrollorRightBottomTwo = new JoshMotorControllor(pwm4, lerpSpeed, true);
+		joshmotorcontrollorLeftBottomOne = new JoshMotorControllor(pwm1, lerpSpeed);
+		joshmotorcontrollorLeftBottomTwo = new JoshMotorControllor(pwm2, lerpSpeed);
+		joshmotorcontrollorRightBottomOne = new JoshMotorControllor(pwm3, lerpSpeed);
+		joshmotorcontrollorRightBottomTwo = new JoshMotorControllor(pwm4, lerpSpeed);
 
 		this.navx = navx;
 		turnController = new PIDController(5.00, 1.0, 0.00020, 0, this.navx, this);

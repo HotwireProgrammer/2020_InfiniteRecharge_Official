@@ -10,8 +10,10 @@ public class TimedTurn extends AutoStep {
     public float time;
     public float speed;
 
+    public DriveTrain driveTrain;
+
     public TimedTurn(DriveTrain driveTrain, float time, float speed) {
-        super(driveTrain);
+        super();
         this.time = time;
         this.speed = speed;
         turnTime = new Timer();

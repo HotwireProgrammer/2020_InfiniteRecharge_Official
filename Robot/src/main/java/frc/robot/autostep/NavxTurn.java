@@ -9,8 +9,10 @@ public class NavxTurn extends AutoStep {
     public float turnDegree;
     public float speed;
 
+    public DriveTrain driveTrain;
+
     public NavxTurn(DriveTrain driveTrain, AHRS navx, float turnDegree, float speed) {
-        super(driveTrain);
+        super();
         this.navx = navx;
         this.speed = speed;
         this.turnDegree = turnDegree;

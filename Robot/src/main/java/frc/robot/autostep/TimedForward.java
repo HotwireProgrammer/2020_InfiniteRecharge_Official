@@ -8,11 +8,14 @@ public class TimedForward extends AutoStep {
     public Timer driveTimer;
     public float driveTime;
     public float speed;
-    
+
+    public DriveTrain driveTrain;
+
     public TimedForward(DriveTrain driveTrain, float driveTime, float speed) {
-        super(driveTrain);
+        super();
         this.driveTime = driveTime;
         this.speed = speed;
+        this.driveTrain = driveTrain;
     }
 
     public void Begin() {

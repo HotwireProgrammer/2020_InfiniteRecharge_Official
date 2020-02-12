@@ -11,8 +11,8 @@ public class NavxReset extends AutoStep {
     public float resetTimeLengthSeconds;
     public Timer navxTime;
 
-    public NavxReset(DriveTrain driveTrain, AHRS navx) {
-        super(driveTrain);
+    public NavxReset(AHRS navx) {
+        super();
         this.navx = navx;
     }
 

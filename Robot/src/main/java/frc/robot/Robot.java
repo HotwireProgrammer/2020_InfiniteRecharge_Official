@@ -15,12 +15,14 @@ import edu.wpi.first.cameraserver.CameraServer;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
+import java.applet.AudioClip;
 import java.nio.Buffer;
 import java.rmi.server.Operation;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick.AxisType;
 import edu.wpi.first.wpilibj.interfaces.Potentiometer;
@@ -36,6 +38,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.hal.PDPJNI;
 import frc.robot.autostep.*;
 import edu.wpi.first.wpilibj.Compressor;
+import java.util.*;
 
 //import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.I2C;
@@ -54,6 +57,8 @@ import edu.wpi.first.wpilibj.util.Color;
 // 11 Shooter at High Power
 
 // 	Left:
+//1 intake
+
 // 6 LL Forward
 // 7 LL Backward
 
@@ -67,17 +72,17 @@ import edu.wpi.first.wpilibj.util.Color;
 //	Right:
 // 6 Power Axis
 
-// 10 Indexing motor(beam break override)
-
 //	Left:
 // 6 TEST
 // 7 TEST
+
+// 11 Indexing motor(beam break override)
 
 public class Robot extends TimedRobot {
 
 	// Sensors
 	public AHRS navx = new AHRS(SPI.Port.kMXP);
-	public DigitalInput beamBreak = new DigitalInput(0);
+
 	// private ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 	public DigitalInput ColorWheelLimit = new DigitalInput(7);
 	public float encoderSpeed1 = 0;
@@ -87,10 +92,10 @@ public class Robot extends TimedRobot {
 	public boolean beamReset = true;
 
 	// Drivetrain
-	public DriveTrain driveTrain = new DriveTrain(0, 1, 2, 3, navx);
+	public DriveTrain driveTrain = new DriveTrain(2, 4, 6, 3, navx);
 
 	// Nuemataics
-	public DoubleSolenoid diskBrake = new DoubleSolenoid(3, 2);
+	public DoubleSolenoid intakeSolenoid = new DoubleSolenoid(6, 7);
 
 	// Logic
 	public boolean speedToggle = false;
@@ -102,35 +107,15 @@ public class Robot extends TimedRobot {
 	public Joystick flightStickLeft;
 	public Joystick flightStickRight;
 
-	public double powerAxis;
+	public Indexer indexer = new Indexer();
+	public Shooter shooter = new Shooter();
+	public Limelight limelight = new Limelight();
 
 	// Motors
-	public TalonSRX indexerThree = new TalonSRX(3);
-
-	public TalonSRX preShooterFour = new TalonSRX(4);
-	public TalonSRX preShooterSix = new TalonSRX(6);
-
-	public TalonSRX shooterTwo = new TalonSRX(2);
-	public TalonSRX shooterFive = new TalonSRX(5);
+	public TalonSRX intakeSeven = new TalonSRX(7);
 
 	public TalonSRX MotorSeven = new TalonSRX(7);
 	public TalonSRX MotorEight = new TalonSRX(8);
-
-	// Timer
-	public Timer indexTimer = new Timer();
-
-	// PID
-	public double shooterP = 0.002;
-	public double shooterI = 0.001;
-	public double shooterD = 0.00001;
-	public double shooterRPMTarget;
-
-	String shooterPKey = "Shooter_P";
-	String shooterIKey = "Shooter_I";
-	String shooterDKey = "Shooter_D";
-	String shooterRPMKey = "Shooter_RPMTarget";
-
-	PIDController shooterPid = new PIDController(shooterP, shooterI, shooterD);
 
 	boolean limitPressed;
 
@@ -140,10 +125,6 @@ public class Robot extends TimedRobot {
 
 	enum AutoChoice {
 		// Left, Right
-	}
-
-	enum RobotState {
-		Autonomous, Teleop;
 	}
 
 	enum ColorWheel {
@@ -156,18 +137,20 @@ public class Robot extends TimedRobot {
 	public RobotState currentState;
 
 	// Auto
-	public AutoStep[] autonomous;
+	public LinkedList<AutoStep> autonomousSelected;
+	// start on the line, backup, and shoot
+	public LinkedList<AutoStep> mostBasicShoot;
+	// start on the right, get two balls, and shoot five
+	public LinkedList<AutoStep> rightFiveBall;
 	public int currentAutoStep;
 
 	public int accum;
 
 	public void robotInit() {
-		SmartDashboard.putNumber(shooterPKey, shooterP);
-		SmartDashboard.putNumber(shooterIKey, shooterI);
-		SmartDashboard.putNumber(shooterDKey, shooterD);
-		SmartDashboard.putNumber(shooterRPMKey, shooterRPMTarget);
+		shooter.Init();
 
-		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(2);
+		SmartDashboard.putBoolean("RobotEnabled", true);
+		indexer.indexerFive.set(ControlMode.PercentOutput, 0.0f);
 	}
 
 	public void disabledInit() {
@@ -180,13 +163,50 @@ public class Robot extends TimedRobot {
 		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(1);
 
 		driveTrain.SetBreak();
-		currentState = RobotState.Autonomous;
 
-		// currentAutoStep = 0;
-		// autonomous = new AutoStep[21];
+		currentAutoStep = 0;
+
+		mostBasicShoot = new LinkedList<AutoStep>();
+		mostBasicShoot.add(new NavxReset(navx));
+		mostBasicShoot.add(new ShooterRev(shooter, 5500.0));
+		mostBasicShoot.add(new TimedForward(driveTrain, 1f, 0.3f));
+		mostBasicShoot.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
+		mostBasicShoot.add(new Shoot(shooter, indexer, 5500.0));
+
+		rightFiveBall = new LinkedList<AutoStep>();
+		rightFiveBall.add(new NavxReset(navx));
+		rightFiveBall.add(new ShooterRev(shooter, 5500.0));
+		// rightFiveBall.add(new IntakeDrop(intakeSolenoid));
+		rightFiveBall.add(new IntakeRun(intakeSeven, 0.6f));
+		rightFiveBall.add(new TimedForward(driveTrain, 5f, 0.3f));
+		rightFiveBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
+		rightFiveBall.add(new Shoot(shooter, indexer, 5500.0));
+
+		autonomousSelected = mostBasicShoot;
+		autonomousSelected.get(0).Begin();
 	}
 
 	public void autonomousPeriodic() {
+		shooter.UpdatePID();
+		// autonomous loop
+		System.out.println("Current auto step " + currentAutoStep);
+		if (currentAutoStep < autonomousSelected.size()) {
+
+			autonomousSelected.get(currentAutoStep).Update();
+
+			if (autonomousSelected.get(currentAutoStep).isDone) {
+				currentAutoStep = currentAutoStep + 1;
+				if (currentAutoStep < autonomousSelected.size()) {
+					autonomousSelected.get(currentAutoStep).Begin();
+				}
+			}
+		} else {
+			// System.out.println("Autonomous Done");
+			driveTrain.SetBothSpeed(0.0f);
+			// currentState = RobotState.Teleop;
+		}
+
+		UpdateMotors();
 	}
 
 	public void teleopInit() {
@@ -194,7 +214,7 @@ public class Robot extends TimedRobot {
 		// colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(2);
 
-		currentState = RobotState.Teleop;
+		shooter.Init();
 
 		// Controllers
 		driver = new Joystick(0);
@@ -210,166 +230,127 @@ public class Robot extends TimedRobot {
 
 		if (selection == DriveScale.parabala) {
 			return multiplier * (float) Math.pow(ControllerInput, 2);
-
 		} else if (selection == DriveScale.tangent) {
-
 			return multiplier * (0.4f * (float) Math.tan(1.8 * (multiplier * ControllerInput) - .9) + 0.5f);
-
 		} else if (selection == DriveScale.inverse) {
-
 			return (float) Math.pow(ControllerInput, 1 / 2);
-
 		} else if (selection == DriveScale.cb) {
-
 			return (float) Math.pow(ControllerInput, 3);
-
 		} else if (selection == DriveScale.cbrt) {
-
 			return multiplier * (0.63f * (float) Math.cbrt((multiplier * ControllerInput) - 0.5f) + 0.5f);
-
 		} else {
-
 			return ControllerInput;
-
 		}
 	}
 
 	public void teleopPeriodic() {
 
 		// Color Wheel
+		if (false) {
+			// Intake Sensor (31)
+			if (ColorWheelLimit.get() == true && !limitPressed) {
+				limitPressed = true;
+				colorChangsCount = colorChangsCount + 1;
+			}
+			if (ColorWheelLimit.get() == false) {
+				limitPressed = false;
+			}
+			// Color Sensor (25)
+			// ColorWheel currentColor = GetCurrentColor();
+			// if (currentColor != LastColor && currentColor != ColorWheel.Unknown) {
+			// colorChangsCount = colorChangsCount + 1;
+			// LastColor = currentColor;
+			// }
 
-		// Intake Sensor (31)
-		if (ColorWheelLimit.get() == true && !limitPressed) {
-			limitPressed = true;
-			colorChangsCount = colorChangsCount + 1;
-		}
-		if (ColorWheelLimit.get() == false) {
-			limitPressed = false;
-		}
-		// System.out.println("Color Changes: " + colorChangsCount);
-
-		// Color Sensor (25)
-		// ColorWheel currentColor = GetCurrentColor();
-		// if (currentColor != LastColor && currentColor != ColorWheel.Unknown) {
-		// colorChangsCount = colorChangsCount + 1;
-		// LastColor = currentColor;
-		// }
-
-		// Reset Color CHanges Number
-		if (flightStickLeft.getRawButton(8)) {
-
-			colorChangsCount = 0;
-
-		}
-
-		// SHOOTER CODE #2
-
-		powerAxis = (Math.round(((((flightStickRight.getRawAxis(2) * -100) + 100) / 2))) / 100.0);
-
-		// Auto Shoot without limelight
-		SmartDashboard.putNumber("Shooter_Speed", shooterTwo.getSelectedSensorVelocity());
-
-		if (flightStickRight.getRawButton(11)) {
-			// speedToggle = true;
-			// preShooterFour.set(ControlMode.PercentOutput, 0.25f * -1);
-			// preShooterSix.set(ControlMode.PercentOutput, 0.25f * -1);
-			shooterTwo.set(ControlMode.PercentOutput, 0.7f);
-			shooterFive.set(ControlMode.PercentOutput, 0.7f * -1);
-		} else {
-			// } else if (flightStickRight.getRawButton(2) && speedToggle == true) {
-			// speedToggle = false;
-			// preShooterFour.set(ControlMode.PercentOutput, 0.0f);
-			// preShooterSix.set(ControlMode.PercentOutput, 0.0f);
-			shooterTwo.set(ControlMode.PercentOutput, 0.0f);
-			shooterFive.set(ControlMode.PercentOutput, 0.0f);
-		}
-
-		// Manual Motor index drive
-		if (flightStickRight.getRawButton(10)) {
-
-			indexerThree.set(ControlMode.PercentOutput, 0.25f);
-
-		} else {
-			indexerThree.set(ControlMode.PercentOutput, 0.0f);
-		}
-
-		// Beam Break
-		// if (flightStickRight.getRawButton(10)) {
-
-		// indexerThree.set(ControlMode.PercentOutput, 0.4f);
-
-		// } else {
-		// if (beamBreak.get() == false) {
-
-		// if (beamReset) {
-		// beamReset = false;
-		// indexerThree.set(ControlMode.PercentOutput, 0.4f);
-		// indexTimer.reset();
-		// indexTimer.start();
-		// }
-
-		// } else {
-		// beamReset = true;
-		// }
-
-		// if (indexTimer.get() >= .2) {
-
-		// indexerThree.set(ControlMode.PercentOutput, 0.0f);
-
-		// }
-		// }
-
-		// Color Wheel Spin
-		if (flightStickLeft.getRawButton(9)) {
-
-			if (colorChangsCount <= 31) {// 25
-
-				MotorSeven.set(ControlMode.PercentOutput, 1.0f);
-
-			} else {
-
-				MotorSeven.set(ControlMode.PercentOutput, 0.0f);
-
+			// Reset Color CHanges Number
+			if (flightStickLeft.getRawButton(8)) {
+				colorChangsCount = 0;
 			}
 
-		} else {
-
-			if (flightStickLeft.getRawButton(10)) {
-
-				MotorSeven.set(ControlMode.PercentOutput, 1.0f);
+			// Color Wheel Spin
+			if (flightStickLeft.getRawButton(9)) {
+				if (colorChangsCount <= 31) {// 25
+					MotorSeven.set(ControlMode.PercentOutput, 1.0f);
+				} else {
+					MotorSeven.set(ControlMode.PercentOutput, 0.0f);
+				}
 
 			} else {
+				if (flightStickLeft.getRawButton(10)) {
+					MotorSeven.set(ControlMode.PercentOutput, 0.5f);
+				} else {
+					MotorSeven.set(ControlMode.PercentOutput, 0.0f);
+				}
+			}
 
-				MotorSeven.set(ControlMode.PercentOutput, 0.0f);
-
+			// Color Wheel Find
+			if (flightStickLeft.getRawButton(11)) {
+				if (GetTargetColor() != LastColor) {
+					MotorSeven.set(ControlMode.PercentOutput, 1.0f);
+				} else {
+					MotorSeven.set(ControlMode.PercentOutput, 0.0f);
+				}
 			}
 		}
 
-		// Color Wheel Find
-		if (flightStickLeft.getRawButton(11)) {
+		// Intake 2=B, 4=Y
+		// TODO add to Dashboard
+		if (operator.getRawButton(2)) {
+			intakeSeven.set(ControlMode.PercentOutput, 0.6f);
+			SmartDashboard.putNumber("intakeMotor", 0.6f);
+			// floorBeltEight.set(ControlMode.PercentOutput, -0.0f);
+			// indexerFive.set(ControlMode.PercentOutput, -0.5f);
+		} else if (operator.getRawButton(4)) {
+			intakeSeven.set(ControlMode.PercentOutput, -0.6f);
+			SmartDashboard.putNumber("intakeMotor", -0.6f);
 
-			if (GetTargetColor() != LastColor) {
+			// floorBeltEight.set(ControlMode.PercentOutput, -0.0f);
+			// indexerFive.set(ControlMode.PercentOutput, -0.5f);
+		} else {
+			intakeSeven.set(ControlMode.PercentOutput, 0.0f);
+			SmartDashboard.putNumber("intakeMotor", 0.0f);
 
-				MotorSeven.set(ControlMode.PercentOutput, 1.0f);
+			// indexerFive.set(ControlMode.PercentOutput, 0.0f);
+		}
 
+		// Intake Solenoid 1=A
+		if (operator.getRawButtonPressed(1)) {
+			if (intakeSolenoid.get() == Value.kForward) {
+				intakeDown();
+			} else if (intakeSolenoid.get() == Value.kReverse) {
+				intakeUp();
 			} else {
+				intakeUp();
+			}
+		}
 
-				MotorSeven.set(ControlMode.PercentOutput, 0.0f);
+		// Shooter code power axis 5=Left Bumper
+		boolean useShooterManual = false;
+		if (useShooterManual) {
+			double powerAxis = (Math.round(((((flightStickRight.getRawAxis(2) * -100) + 100) / 2))) / 100.0);
+
+			if (flightStickRight.getRawButton(11)) {
+				shooter.PowerManual((float) powerAxis);
+			} else {
+				shooter.PowerManual(0.0f);
+			}
+		} else {
+			shooter.rpmTarget = SmartDashboard.getNumber(shooter.shooterRPMKey, shooter.shooterRPMTarget);
+			if (operator.getRawButton(5)) {
+				shooter.rpmTarget = 5700;
+				SmartDashboard.putNumber(shooter.shooterRPMKey, 5700);
 
 			}
 
+			shooter.UpdatePID();
 		}
 
-		// Disk Break
-		// if (flightStickRight.getRawButtonPressed(11)) {
-
-		// DiskBrakeEnable();
-
-		// } else if (flightStickRight.getRawButtonPressed(10)) {
-
-		// DiskBrakeDisable();
-
-		// }
+		// Indexer 6=Right Bumper
+		if (operator.getRawButton(6)) {
+			indexer.RunManualForward();
+		} else {
+			indexer.RunAutomatic();
+		}
 
 		// // Climber
 		// if (flightStickRight.getRawButton(9)) {
@@ -386,64 +367,15 @@ public class Robot extends TimedRobot {
 		// MotorSeven.set(ControlMode.PercentOutput, 0);
 		// MotorEight.set(ControlMode.PercentOutput, 0);
 		// }
-
-		// Limelight
-		NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-		NetworkTableEntry tx = table.getEntry("tx");
-		NetworkTableEntry ty = table.getEntry("ty");
-		NetworkTableEntry ta = table.getEntry("ta");
-
-		double x = tx.getDouble(0.0);
-		double y = ty.getDouble(0.0);
-		double area = ta.getDouble(0.0);
-
-		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(0);
-
 		if (flightStickLeft.getRawButton(6) || (flightStickLeft.getRawButton(7))) {
-
-			float inverted = 1;
-
 			if (flightStickLeft.getRawButton(6)) {
-
-				inverted = 1;
-
+				limelight.Position(driveTrain, 1, 0);
 			} else {
-
-				inverted = -1;
-
+				limelight.Position(driveTrain, -1, 0);
 			}
 
-			float maxArea = 3.4f;
-			float minArea = 0.26f;
-			float currentAreaPercentage = ((float) area - minArea) / (maxArea - minArea);
-
-			float maxSpeed = 0.9f;
-			float minSpeed = 0.7f;
-			float currentSpeed = Lerp(minSpeed, maxSpeed, currentAreaPercentage);
-
-			float turnBuffer = 1.5f;
-			float turnSpeedSlow = -currentSpeed * 0.5f;
-
-			if (x * inverted > turnBuffer) {
-
-				driveTrain.SetLeftSpeed(currentSpeed * inverted);
-				driveTrain.SetRightSpeed(turnSpeedSlow * inverted);
-
-			} else if (x * inverted < -turnBuffer) {
-
-				driveTrain.SetLeftSpeed(turnSpeedSlow * inverted);
-				driveTrain.SetRightSpeed(currentSpeed * inverted);
-
-			} else {
-
-				driveTrain.SetLeftSpeed(0.0f);
-				driveTrain.SetRightSpeed(0.0f);
-
-			}
 		} else {
-
 			ControllerDrive();
-
 		}
 
 		UpdateMotors();
@@ -458,73 +390,58 @@ public class Robot extends TimedRobot {
 		operator = new Joystick(1);
 		flightStickLeft = new Joystick(3);
 		flightStickRight = new Joystick(2);
+
+		shooter.Init();
+
+	}
+
+	public float Lerp(float v0, float v1, float t) {
+
+		if (t < 0) {
+			t = 0;
+
+		} else if (t > 1) {
+			t = 1;
+		}
+
+		return (v0 + t * (v1 - v0));
 	}
 
 	public void testPeriodic() {
+		NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+		NetworkTableEntry ts = table.getEntry("ts");
+		double skew = ts.getDouble(0.0);
+		NetworkTableEntry tx = table.getEntry("tx");
+		double x = tx.getDouble(0.0);
 
-		powerAxis = (Math.round(((((flightStickRight.getRawAxis(2) * -100) + 100) / 2))) / 100.0);
-
-		boolean usePid = true;
-
-		// rpm pid
-		if (usePid) {
-			float rpm = TalonVelocityToRPM(shooterTwo.getSelectedSensorVelocity(), 1.0f);
-			SmartDashboard.putNumber("Shooter_RPM", rpm);
-
-			shooterP = SmartDashboard.getNumber(shooterPKey, shooterP);
-			shooterI = SmartDashboard.getNumber(shooterIKey, shooterI);
-			shooterD = SmartDashboard.getNumber(shooterDKey, shooterD);
-			shooterRPMTarget = SmartDashboard.getNumber(shooterRPMKey, shooterRPMTarget);
-
-			shooterPid.setP(shooterP);
-			shooterPid.setI(shooterI);
-			shooterPid.setD(shooterD);
-
-			double motorSpeed = shooterPid.calculate(rpm, shooterRPMTarget);
-
-			System.out.println("Speed " + motorSpeed + " RPM " + rpm);
-
-			ShooterPower((float) motorSpeed, 0.0f);
-		} else {
-
-			// Shooter
-			if (flightStickRight.getRawButton(11)) {
-				ShooterPower(1.0f, 1.0f);
-			} else if (flightStickRight.getRawButton(10)) {
-				ShooterPower(0.25f, 1.0f);
-			} else if (flightStickRight.getRawButton(6)) {
-				ShooterPower((float) powerAxis, 1.0f);
-			} else {
-				ShooterPower(0.0f, 0.0f);
-			}
-		}
-
-		// Encoder
-		float oldSpeed = encoderSpeed1;
-
-		encoderSpeed1 = MotorSeven.getSelectedSensorVelocity();
-		// System.out.println(encoderSpeed1);
-
-		if (oldSpeed != encoderSpeed1) {
-
-			// SmartDashboard.putNumber("encoderSpeed1", encoderSpeed1);
-
-		}
-
-		// encoderSpeed2 = MotorEight.getSelectedSensorVelocity();
-		// System.out.println("climber two" + encoderSpeed2);
-
-		// Manual Motor index drive
-		if (flightStickRight.getRawButton(10)) {
-
-			indexerThree.set(ControlMode.PercentOutput, 0.25f);
-
-		} else {
-			indexerThree.set(ControlMode.PercentOutput, 0.0f);
-		}
-
-		ControllerDrive();
-		UpdateMotors();
+		System.out.println("skew " + skew);
+		System.out.println("x " + x);
+		/*
+		 * 
+		 * boolean usePid = false;
+		 * 
+		 * // Encoder float oldSpeed = encoderSpeed1;
+		 * 
+		 * encoderSpeed1 = MotorSeven.getSelectedSensorVelocity(); //
+		 * System.out.println(encoderSpeed1);
+		 * 
+		 * if (oldSpeed != encoderSpeed1) {
+		 * 
+		 * // SmartDashboard.putNumber("encoderSpeed1", encoderSpeed1);
+		 * 
+		 * }
+		 * 
+		 * // encoderSpeed2 = MotorEight.getSelectedSensorVelocity(); //
+		 * System.out.println("climber two" + encoderSpeed2);
+		 * 
+		 * // Manual Motor index drive // if (flightStickLeft.getRawButton(11)) {
+		 * 
+		 * // indexerFive.set(ControlMode.PercentOutput, 0.5f);
+		 * 
+		 * // } else { // indexerFive.set(ControlMode.PercentOutput, 0.0f); // }
+		 * 
+		 * ControllerDrive(); UpdateMotors();
+		 */
 
 	}
 
@@ -603,29 +520,17 @@ public class Robot extends TimedRobot {
 		return output;
 	}
 
-	// DiskBrake
-	public void DiskBrakeEnable() {
+	// Intake Solenoid
+	public void intakeDown() {
 		System.out.println("Enabled");
-		SmartDashboard.putBoolean("diskBrakeStatus", true);
-		diskBrake.set(DoubleSolenoid.Value.kReverse);
+		SmartDashboard.putBoolean("intakeExtended", true);
+		intakeSolenoid.set(DoubleSolenoid.Value.kReverse);
 	}
 
-	public void DiskBrakeDisable() {
+	public void intakeUp() {
 		System.out.println("Disabled");
-		SmartDashboard.putBoolean("diskBrakeStatus", false);
-		diskBrake.set(DoubleSolenoid.Value.kForward);
-	}
-
-	public float Lerp(float v0, float v1, float t) {
-
-		if (t < 0) {
-			t = 0;
-
-		} else if (t > 1) {
-			t = 1;
-		}
-
-		return (v0 + t * (v1 - v0));
+		SmartDashboard.putBoolean("intakeExtended", false);
+		intakeSolenoid.set(DoubleSolenoid.Value.kForward);
 	}
 
 	public ColorWheel GetTargetColor() {
@@ -644,23 +549,6 @@ public class Robot extends TimedRobot {
 		}
 
 		return ColorWheel.Unknown;
-	}
-
-	// Shooter Motors
-	public void ShooterPower(float power, float preshooterpower) {
-
-		preShooterFour.set(ControlMode.PercentOutput, preshooterpower);
-		MotorSeven.set(ControlMode.PercentOutput, power * -1);
-		MotorEight.set(ControlMode.PercentOutput, power);
-		shooterFive.set(ControlMode.PercentOutput, power * -1);
-		shooterTwo.set(ControlMode.PercentOutput, power);
-
-	}
-
-	// RPM Caculator
-	public float TalonVelocityToRPM(float ticks, float gearBoxReduction) {
-		float rpm = ((ticks / 4652) * 600);
-		return Math.abs(rpm);
 	}
 
 }
