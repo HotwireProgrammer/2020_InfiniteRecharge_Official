@@ -89,6 +89,10 @@ public class DriveTrain implements PIDOutput {
 		turnController.setSetpoint(0);
 	}
 
+	public double GetEncoder() {
+		return joshmotorcontrollorLeftBottomOne.talon.getSelectedSensorPosition();
+	}
+
 	@Override
 	public void pidWrite(double output) {
 	}

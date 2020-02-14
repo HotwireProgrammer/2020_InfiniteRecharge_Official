@@ -16,6 +16,8 @@ public abstract class AutoStep {
 
     public boolean isDone;
 
+    public boolean autoIndex = true;
+
     public AutoStep()
     {
         isDone = false;

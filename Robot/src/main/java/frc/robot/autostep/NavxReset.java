@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.Timer;
 import com.kauailabs.navx.frc.AHRS;
 
 import frc.robot.DriveTrain;
+import frc.robot.Indexer;
 
 public class NavxReset extends AutoStep {
 

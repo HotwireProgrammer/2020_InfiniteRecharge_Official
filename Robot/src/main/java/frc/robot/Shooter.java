@@ -24,7 +24,7 @@ public class Shooter {
 
     public double rpmTarget = 0;
 
-    public float rpm = 0;
+    public float rpmCurrent = 0;
 
     public void Init() {
         SmartDashboard.putNumber(shooterPKey, shooterP);
@@ -35,10 +35,13 @@ public class Shooter {
         shooterPid = new PIDController(shooterP, shooterI, shooterD);
     }
 
-    public void UpdatePID() {
+    public void Update() {
+        rpmCurrent = TalonVelocityToRPM(shooterTwo.getSelectedSensorVelocity(), 1.0f);
+    }
+
+    public void UpdatePID() {        
         // Shooter code pid
-        rpm = TalonVelocityToRPM(shooterTwo.getSelectedSensorVelocity(), 1.0f);
-        SmartDashboard.putNumber("Shooter_RPM", rpm);
+        SmartDashboard.putNumber("Shooter_RPM", rpmCurrent);
 
         shooterP = SmartDashboard.getNumber(shooterPKey, shooterP);
         shooterI = SmartDashboard.getNumber(shooterIKey, shooterI);
@@ -48,7 +51,7 @@ public class Shooter {
         shooterPid.setI(shooterI);
         shooterPid.setD(shooterD);
 
-        double motorSpeed = shooterPid.calculate(rpm, rpmTarget);
+        double motorSpeed = shooterPid.calculate(rpmCurrent, rpmTarget);
 
         if (motorSpeed < 0) {
             motorSpeed = 0;
@@ -57,9 +60,15 @@ public class Shooter {
         if (motorSpeed >= max) {
             motorSpeed = max;
         }
-        //System.out.println("Speed " + motorSpeed + " RPM " + rpm);
+        // System.out.println("Speed " + motorSpeed + " RPM " + rpm);
         SmartDashboard.putNumber("Shooter_Speed", motorSpeed);
         PowerManual((float) motorSpeed);
+    }
+
+    public boolean UpToSpeed() {
+        double distance = Math.abs(rpmCurrent - rpmTarget);
+        System.out.println(" shooter distance " + distance);
+        return distance < (rpmTarget * 0.03f);
     }
 
     public void PowerManual(float power) {

@@ -16,6 +16,7 @@ public class NavxTurn extends AutoStep {
         this.navx = navx;
         this.speed = speed;
         this.turnDegree = turnDegree;
+        this.driveTrain = driveTrain;
     }
 
     public void Begin() {
@@ -27,7 +28,7 @@ public class NavxTurn extends AutoStep {
     }
 
     public void Update() {
-
+        System.out.println(navx.getYaw());
         float degreeDifference = Math.abs(navx.getYaw() - turnDegree);
         float goodEnoughDeg = 5.0f;
         if (degreeDifference < goodEnoughDeg) {

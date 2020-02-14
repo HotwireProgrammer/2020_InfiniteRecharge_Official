@@ -92,7 +92,7 @@ public class Robot extends TimedRobot {
 	public boolean beamReset = true;
 
 	// Drivetrain
-	public DriveTrain driveTrain = new DriveTrain(2, 4, 6, 3, navx);
+	public DriveTrain driveTrain = new DriveTrain(54, 55, 56, 57, navx);
 
 	// Nuemataics
 	public DoubleSolenoid intakeSolenoid = new DoubleSolenoid(6, 7);
@@ -107,15 +107,15 @@ public class Robot extends TimedRobot {
 	public Joystick flightStickLeft;
 	public Joystick flightStickRight;
 
-	public Indexer indexer = new Indexer();
 	public Shooter shooter = new Shooter();
+	public Indexer indexer = new Indexer(shooter);
 	public Limelight limelight = new Limelight();
 
 	// Motors
-	public TalonSRX intakeSeven = new TalonSRX(7);
+	public TalonSRX intakeSeven = new TalonSRX(6);
 
-	public TalonSRX MotorSeven = new TalonSRX(7);
-	public TalonSRX MotorEight = new TalonSRX(8);
+	public TalonSRX MotorSeven = new TalonSRX(30);
+	public TalonSRX MotorEight = new TalonSRX(31);
 
 	boolean limitPressed;
 
@@ -142,13 +142,20 @@ public class Robot extends TimedRobot {
 	public LinkedList<AutoStep> mostBasicShoot;
 	// start on the right, get two balls, and shoot five
 	public LinkedList<AutoStep> rightFiveBall;
+	// start on line then move back grab 2 balls from center, then go to trench to
+	// grab three balls
+	public LinkedList<AutoStep> centerEightBall;
+
 	public int currentAutoStep;
+	// public float auto = 0;
 
 	public int accum;
 
 	public void robotInit() {
+		limelight.SetLight(false);
 		shooter.Init();
 
+		// SmartDashboard.putNumber("AutoMode", 0);
 		SmartDashboard.putBoolean("RobotEnabled", true);
 		indexer.indexerFive.set(ControlMode.PercentOutput, 0.0f);
 	}
@@ -160,39 +167,83 @@ public class Robot extends TimedRobot {
 	}
 
 	public void autonomousInit() {
-		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(1);
 
+		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(1);
+		// autonomousSelected = SmartDashboard.getNumber("/SmartDashboard/autoMode", 0);
+
+		limelight.AutoSettings();
 		driveTrain.SetBreak();
+		limelight.SetLight(true);
+		indexer.ballCounter = 3;
 
 		currentAutoStep = 0;
 
 		mostBasicShoot = new LinkedList<AutoStep>();
 		mostBasicShoot.add(new NavxReset(navx));
-		mostBasicShoot.add(new ShooterRev(shooter, 5500.0));
-		mostBasicShoot.add(new TimedForward(driveTrain, 1f, 0.3f));
+		mostBasicShoot.add(new ShooterRev(shooter, 4100.0));
+		// Configuration Complete
+		mostBasicShoot.add(new EncoderForward(driveTrain, 50000f, -0.15f));
 		mostBasicShoot.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
-		mostBasicShoot.add(new Shoot(shooter, indexer, 5500.0));
+		mostBasicShoot.add(new Shoot(shooter, indexer, 4100.0, 3));
 
 		rightFiveBall = new LinkedList<AutoStep>();
 		rightFiveBall.add(new NavxReset(navx));
-		rightFiveBall.add(new ShooterRev(shooter, 5500.0));
-		// rightFiveBall.add(new IntakeDrop(intakeSolenoid));
+		rightFiveBall.add(new ShooterRev(shooter, 3600.0));
+		rightFiveBall.add(new IntakeDrop(intakeSolenoid));
 		rightFiveBall.add(new IntakeRun(intakeSeven, 0.6f));
-		rightFiveBall.add(new TimedForward(driveTrain, 5f, 0.3f));
-		rightFiveBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
-		rightFiveBall.add(new Shoot(shooter, indexer, 5500.0));
+		// Configuration Complete
+		rightFiveBall.add(new EncoderForward(driveTrain, 120000f, -0.8f));
+		// 5 balls intaked
+		rightFiveBall.add(new LimelightTrack(driveTrain, shooter, limelight, -0.85f));
+		rightFiveBall.add(new Shoot(shooter, indexer, 3600.0, 5));
+		// All balls shoot
+		rightFiveBall.add(new NavxTurn(driveTrain, navx, 0, .3f));
+		rightFiveBall.add(new EncoderForward(driveTrain, 50000f, -0.25f));
+		rightFiveBall.add(new NavxTurn(driveTrain, navx, 140, .3f));
+		rightFiveBall.add(new EncoderForward(driveTrain, 70000f, -0.25f));
 
-		autonomousSelected = mostBasicShoot;
+		centerEightBall = new LinkedList<AutoStep>();
+		centerEightBall.add(new NavxReset(navx));
+		centerEightBall.add(new ShooterRev(shooter, 3600.0));
+		centerEightBall.add(new IntakeDrop(intakeSolenoid));
+		centerEightBall.add(new IntakeRun(intakeSeven, 0.6f));
+		// Configuration Done
+		centerEightBall.add(new EncoderForward(driveTrain, 63000f, -0.8f));
+		centerEightBall.add(new NavxTurn(driveTrain, navx, 70, .3f));
+		centerEightBall.add(new EncoderForward(driveTrain, 25000f, -0.2f));
+		// Balls intaked
+		centerEightBall.add(new EncoderForward(driveTrain, 25000f, 0.2f));
+		centerEightBall.add(new NavxTurn(driveTrain, navx, 0, .3f));
+		centerEightBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
+		// First Shooting Session
+		centerEightBall.add(new Shoot(shooter, indexer, 4100.0, 3));
+		centerEightBall.add(new NavxTurn(driveTrain, navx, -90, .3f));
+		centerEightBall.add(new EncoderForward(driveTrain, 25000f, -0.6f));
+		centerEightBall.add(new NavxTurn(driveTrain, navx, 0, .3f));
+		centerEightBall.add(new EncoderForward(driveTrain, 90000f, -0.2f));
+		centerEightBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
+		centerEightBall.add(new Shoot(shooter, indexer, 4100.0, 3));
+
+		autonomousSelected = centerEightBall;
 		autonomousSelected.get(0).Begin();
 	}
 
 	public void autonomousPeriodic() {
+
+		// System.out.println(driveTrain.GetEncoder());
+
+		shooter.Update();
 		shooter.UpdatePID();
+
 		// autonomous loop
 		System.out.println("Current auto step " + currentAutoStep);
 		if (currentAutoStep < autonomousSelected.size()) {
 
 			autonomousSelected.get(currentAutoStep).Update();
+
+			if (autonomousSelected.get(currentAutoStep).autoIndex) {
+				indexer.RunAutomatic();
+			}
 
 			if (autonomousSelected.get(currentAutoStep).isDone) {
 				currentAutoStep = currentAutoStep + 1;
@@ -211,10 +262,15 @@ public class Robot extends TimedRobot {
 
 	public void teleopInit() {
 
+		limelight.TeleopSettings();
+		limelight.SetLight(false);
+
 		// colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 		NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(2);
 
 		shooter.Init();
+
+		driveTrain.SetCoast();
 
 		// Controllers
 		driver = new Joystick(0);
@@ -244,6 +300,8 @@ public class Robot extends TimedRobot {
 	}
 
 	public void teleopPeriodic() {
+
+		shooter.Update();
 
 		// Color Wheel
 		if (false) {
@@ -324,32 +382,29 @@ public class Robot extends TimedRobot {
 			}
 		}
 
-		// Shooter code power axis 5=Left Bumper
-		boolean useShooterManual = false;
-		if (useShooterManual) {
-			double powerAxis = (Math.round(((((flightStickRight.getRawAxis(2) * -100) + 100) / 2))) / 100.0);
-
-			if (flightStickRight.getRawButton(11)) {
-				shooter.PowerManual((float) powerAxis);
-			} else {
-				shooter.PowerManual(0.0f);
-			}
+		// Shooter
+		shooter.rpmTarget = SmartDashboard.getNumber(shooter.shooterRPMKey, shooter.shooterRPMTarget);
+		if (operator.getRawButton(5)) {
+			shooter.rpmTarget = 4100;
+			// SmartDashboard.putNumber(shooter.shooterRPMKey, 5700);
+			limelight.SetLight(true);
 		} else {
-			shooter.rpmTarget = SmartDashboard.getNumber(shooter.shooterRPMKey, shooter.shooterRPMTarget);
-			if (operator.getRawButton(5)) {
-				shooter.rpmTarget = 5700;
-				SmartDashboard.putNumber(shooter.shooterRPMKey, 5700);
-
-			}
-
-			shooter.UpdatePID();
+			limelight.SetLight(false);
 		}
+		shooter.UpdatePID();
 
-		// Indexer 6=Right Bumper
+		// Indexer 3=X 6=Right Bumper
 		if (operator.getRawButton(6)) {
 			indexer.RunManualForward();
+			SmartDashboard.putNumber("ballCounter", 0);
+		} else if (operator.getRawButton(3)) { // Manual Override
+			indexer.indexerFive.set(ControlMode.PercentOutput, -0.4f);
+			indexer.ballCounter = 0;
+			SmartDashboard.putNumber("ballCounter", 0);
 		} else {
 			indexer.RunAutomatic();
+			SmartDashboard.putNumber("ballCounter", indexer.ballCounter);
+
 		}
 
 		// // Climber
@@ -385,6 +440,7 @@ public class Robot extends TimedRobot {
 
 		navx.reset();
 
+
 		// Controllers
 		driver = new Joystick(0);
 		operator = new Joystick(1);
@@ -408,14 +464,11 @@ public class Robot extends TimedRobot {
 	}
 
 	public void testPeriodic() {
-		NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-		NetworkTableEntry ts = table.getEntry("ts");
-		double skew = ts.getDouble(0.0);
-		NetworkTableEntry tx = table.getEntry("tx");
-		double x = tx.getDouble(0.0);
+		// System.out.println("Roll: " + navx.getRoll());
+		System.out.println("Yaw: " + navx.getYaw());
 
-		System.out.println("skew " + skew);
-		System.out.println("x " + x);
+		limelight.SetLight(true);
+
 		/*
 		 * 
 		 * boolean usePid = false;

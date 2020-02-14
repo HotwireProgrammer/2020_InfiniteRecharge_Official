@@ -12,12 +12,12 @@ public class IntakeDrop extends AutoStep {
 
 public DoubleSolenoid intakeSolenoid;
 
-    public IntakeDrop(AHRS navx) {
+    public IntakeDrop(DoubleSolenoid intakeSolenoid) {
         super();
+        this.intakeSolenoid = intakeSolenoid;
     }
 
     public void Begin() {     
-		System.out.println("Enabled");
 		SmartDashboard.putBoolean("intakeExtended", true);
 		intakeSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
