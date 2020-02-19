@@ -19,26 +19,30 @@ export default {
             autoModeValue: 0,
             colorSelectionValue: 0,
             robotConnected: false,
+            matchTime: 0,
             shootingWheelToggled: false,
             shootingWheelTarget: 0,
             shootingWheelSpeed: 0,
             autoModes: [
                 {
-                    text: 'Basic Mode',
+                    text: 'Most Basic Shoot',
                     value: 0
                 },{
-                    text: 'Advanced Mode',
+                    text: 'Right Five Ball',
                     value: 1
                 },{
-                    text: 'Super Mode',
+                    text: 'Center Eight Ball',
                     value: 2
+                },{
+                    text: 'EMPTY',
+                    value: 3
                 }
             ]
         }
     },
     methods: {
-        updateAutoModes: function(auto){
-            NetworkTables.putValue("/SmartDashboard/autoMode", auto);
+        updateAutoModes: function(autoModeValue){
+            NetworkTables.putValue("/SmartDashboard/autoMode", autoModeValue);
         },
 
         getImgSrc: function() {
@@ -71,6 +75,12 @@ export default {
                 this.shootingWheelSpeed = val;
             }
         );
+         NetworkTables.addKeyListener(
+            "/SmartDashboard/MatchTime",
+            (k, val) => {
+                this.matchTime = val;
+            }
+        );
     }
 };
 </script>
@@ -100,7 +110,7 @@ export default {
         </v-col>
     </v-row>
     <v-row no-gutters>
-        <v-col cols="12">
+        <v-col cols="6">
             <div class="choices">
                 <v-select
                     :items="autoModes"
@@ -114,6 +124,11 @@ export default {
                 ></v-select>
                 <img class="field-img" v-bind:src="getImgSrc()" />
             </div>
+        </v-col>
+        <v-col cols="6">
+            <span class="match-time">
+                {{matchTime}} Seconds
+            </span>
         </v-col>
     </v-row>
 </v-container>
@@ -142,5 +157,9 @@ export default {
 
     .video {
         width:95%;
+    }
+
+    .match-time {
+        font-size: 50px;
     }
 </style>

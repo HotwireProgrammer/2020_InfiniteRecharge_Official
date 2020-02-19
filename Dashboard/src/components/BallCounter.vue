@@ -39,6 +39,9 @@ export default {
         {{ballVal}}
     </span>
     <v-icon class="down-icon" @click="ballVal--" large>mdi-arrow-down-bold</v-icon>
+        <span class="counter-field">
+        Balls
+        </span>
 <!--
     <v-text-field 
         class="counter-field" 
