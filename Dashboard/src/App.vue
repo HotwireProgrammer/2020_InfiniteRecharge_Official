@@ -22,17 +22,15 @@ export default {
     data: () => ({
         drawer: null,
         currentPage: "Driver",
-        bottomNav: 'recent'
+        bottomNav: 'recent',
+        dataLoggingStarted: false
     }),
     methods: {
-        menuClick: function(page){
+        menuClick: function(page) {
             this.currentPage = page;
             this.drawer = !this.drawer;
-        },
-        toggleBtnClicked: function() {
-            NetworkTables.putValue('toggleRovot', 1);
         }
-    },
+    }
 };
 </script>
 

@@ -10,9 +10,13 @@ export default {
             NetworkTables.addKeyListener('/SmartDashboard/' + this.networkKey, this.updateIndicator);
         }
     },
-    data: () => (
-        { toggledOn: false }
-    ),
+    data: function () { 
+        return { 
+            toggledOn: this.status,
+            // activeColor: this.warn ? 'pink' : 'red'
+            activeColor: this.warn ? '#f44336' : '#00ff4e'
+        }
+    },
     props: {
         label: {
             type: String,
@@ -23,12 +27,15 @@ export default {
             required: true
         },
         networkKey: String,
-        status: Boolean,
+        status: {
+            type: Boolean,
+            default: false
+        },
+        warn: Boolean,
         spin: Boolean
     },
     methods: {
         updateIndicator: function(key, newValue) {
-            this.status = newValue;
             this.toggledOn = newValue;
         },
     }
@@ -39,12 +46,12 @@ export default {
 <div>
     <v-icon 
         class="icon"
-        v-bind:class="{'mdi-spin': this.status && this.spin}"
-        v-bind:color="status || toggledOn ? '#00ff4e' : 'white'"
+        v-bind:class="{'mdi-spin': status && spin}"
+        v-bind:color="status || toggledOn ? activeColor : 'white'"
         x-large>
             mdi-{{icon}}
     </v-icon>
-    <span v-bind:class="{ active: status || toggledOn }">{{label}}</span>
+    <span v-bind:class="{ active: status || toggledOn, warn: warn }">{{label}}</span>
 </div>
 </template>
 
@@ -56,6 +63,10 @@ export default {
 
 .active {
     color: #00ff4e;
+
+    &.warn {
+        color: #f44336
+    }
 }
 
 </style>

@@ -27,7 +27,7 @@ new Vue({
         if (!NetworkTables.isRobotConnected()) {
             setTimeout(this.connectionRetry, 1000);
         }
-        logger.initDataLogging();
+        this.initDataLogging();
     },
     methods: {
         connectionRetry: function () {
@@ -38,7 +38,26 @@ new Vue({
             logger.logEvent('Attepting robot connection to: ' + IP_ADDRESS);
             NetworkTables.connect(IP_ADDRESS);
             setTimeout(this.connectionRetry, retryFreq * 1000);
+        },
+        initDataLogging: function() {
+            if (this.dataLoggingStarted) return;
 
+            this.dataLoggingStarted = true;
+            NetworkTables.addKeyListener('/SmartDashboard/ballCounter', logger.logData);
+            NetworkTables.addKeyListener('/SmartDashboard/PDP_Temperature', logger.logData);
+            NetworkTables.addKeyListener('/SmartDashboard/PDP_Voltage', logger.logData);
+            NetworkTables.addKeyListener('/SmartDashboard/Shooter_Speed', logger.logData);
+            NetworkTables.addKeyListener('/SmartDashboard/Shooter_RPM', logger.logData);
+
+            for (let i = 0; i < 15; i++) {
+                NetworkTables.addKeyListener('/SmartDashboard/PDP_' + i, logger.logData);
+            }
+
+            NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (enabled) => {
+                if (!enabled) {
+                    endMatchProcessing();
+                }
+            });
         }
     }
 }).$mount('#app')

@@ -1,5 +1,3 @@
-import { isNumber } from 'util';
-
 /* eslint-disable no-console */
 
 const fs = require('fs').promises;
@@ -80,24 +78,4 @@ export async function endMatchProcessing() {
             });
     }
     _createMatchFolder(0);
-}
-
-export function initDataLogging() {
-    if (dataLoggingStarted) return;
-
-    NetworkTables.addKeyListener('/SmartDashboard/ballCounter', logData);
-    NetworkTables.addKeyListener('/SmartDashboard/PDP_Temperature', logData);
-    NetworkTables.addKeyListener('/SmartDashboard/PDP_Voltage', logData);
-    NetworkTables.addKeyListener('/SmartDashboard/Shooter_Speed', logData);
-    NetworkTables.addKeyListener('/SmartDashboard/Shooter_RPM', logData);
-
-    for (let i = 0; i < 15; i++) {
-        NetworkTables.addKeyListener('/SmartDashboard/PDP_' + i, logData);
-    }
-
-    NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (enabled) => {
-        if (!enabled) {
-            endMatchProcessing();
-        }
-    });
 }
