@@ -63,7 +63,6 @@ export async function endMatchProcessing() {
                 _createMatchFolder(num+1)
             })
             .catch(async (err) => {
-                console.log('in the then');
 
                 const postMatchPath = `src/logs/matches/${dateStr}/match-${num}/`;
                 await fs.mkdir(postMatchPath, { recursive: true });
@@ -74,12 +73,31 @@ export async function endMatchProcessing() {
                 dirs.sort();
 
                 dirs.forEach(async (file) => {
-                    console.log('file', file);
                     let data = await fs.readFile(dataPath + file);
                     await fs.appendFile(postMatchPath + 'dataFile.csv', `${file.substring(0, file.length - 4)},${data}\n`);
+                    await fs.unlink(dataPath + file);
                 });
             });
     }
     _createMatchFolder(0);
 }
 
+export function initDataLogging() {
+    if (dataLoggingStarted) return;
+
+    NetworkTables.addKeyListener('/SmartDashboard/ballCounter', logData);
+    NetworkTables.addKeyListener('/SmartDashboard/PDP_Temperature', logData);
+    NetworkTables.addKeyListener('/SmartDashboard/PDP_Voltage', logData);
+    NetworkTables.addKeyListener('/SmartDashboard/Shooter_Speed', logData);
+    NetworkTables.addKeyListener('/SmartDashboard/Shooter_RPM', logData);
+
+    for (let i = 0; i < 15; i++) {
+        NetworkTables.addKeyListener('/SmartDashboard/PDP_' + i, logData);
+    }
+
+    NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (enabled) => {
+        if (!enabled) {
+            endMatchProcessing();
+        }
+    });
+}

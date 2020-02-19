@@ -24,9 +24,6 @@ export default {
     this.pVal = NetworkTables.getValue("/SmartDashboard/Shooter_P", 0);
     this.iVal = NetworkTables.getValue("/SmartDashboard/Shooter_I", 0);
     this.dVal = NetworkTables.getValue("/SmartDashboard/Shooter_D", 0);
-    logger.logData("/SmartDashboard/Shooter_P", this.pVal);
-    logger.logData("/SmartDashboard/Shooter_I", this.iVal);
-    logger.logData("/SmartDashboard/Shooter_D", this.dVal);
   },
   methods: {
     addRPMvalue: function(key, newSpeed) {
@@ -38,7 +35,6 @@ export default {
         this.rpmGoalData.shift();
       }
       this.isInTolerance = this.toleranceCalc() 
-      logger.logData(key, newSpeed);
     },
 
     setSpeedvalue: function(key, newSpeed) {
@@ -58,10 +54,6 @@ export default {
         "/SmartDashboard/Shooter_RPMTarget",
         this.rpmGoalVal
       );
-      logger.logData("/SmartDashboard/Shooter_P", this.pVal);
-      logger.logData("/SmartDashboard/Shooter_I", this.iVal);
-      logger.logData("/SmartDashboard/Shooter_D", this.dVal);
-      logger.logData("/SmartDashboard/Shooter_RPMTarget", this.rpmGoalVal);
     }
   },
   data: function() {

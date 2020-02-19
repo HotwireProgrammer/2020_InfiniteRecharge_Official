@@ -27,6 +27,7 @@ new Vue({
         if (!NetworkTables.isRobotConnected()) {
             setTimeout(this.connectionRetry, 1000);
         }
+        logger.initDataLogging();
     },
     methods: {
         connectionRetry: function () {
@@ -45,7 +46,4 @@ new Vue({
 
 function onRobotConnection() {
     logger.logEvent('Robot has connected to dashboard');
-}
-function consoleListener(key, value) {
-    logger.logEvent(key + ' :: ' + value);
 }
