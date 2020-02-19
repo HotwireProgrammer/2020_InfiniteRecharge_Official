@@ -21,7 +21,7 @@ export default {
     methods: {
         updateUltrasonicDown: function (newValue) {
             this.value = newValue;
-            logger.logData('UltrasonicDown', newValue)
+            // logger.logData('UltrasonicDown', newValue)
         }
     },
     mounted: function() {

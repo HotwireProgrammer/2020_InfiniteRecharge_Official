@@ -23,6 +23,7 @@ export default {
             shootingWheelToggled: false,
             shootingWheelTarget: 0,
             shootingWheelSpeed: 0,
+            brownedOut: false,
             autoModes: [
                 {
                     text: 'Most Basic Shoot',
@@ -47,11 +48,6 @@ export default {
 
         getImgSrc: function() {
             return require(`../assets/field-${this.autoModeValue}.jpg`);
-        },
-
-        endMatch: function() {
-            console.log("End Match  - ",  true);
-            logger.endMatchProcessing();
         }
     },
     mounted: function() {
@@ -59,6 +55,18 @@ export default {
             (connected) => this.robotConnected = connected,
             true
         );
+
+        NetworkTables.addKeyListener(
+            '/SmartDashboard/PDP_Voltage',
+            (k, val) => {
+                if (val < 7) {
+                    this.brownedOut = true;
+                } else {
+                    this.brownedOut = false;
+                }
+            }
+        );
+
 
         NetworkTables.addKeyListener(
             "/SmartDashboard/Shooter_RPMTarget",
@@ -95,17 +103,19 @@ export default {
             </video>
         </v-col>
         <v-col cols="3">
-            <indicator class="indicator" icon="car-connected" label="Robot Connected" v-bind:toggledValue="this.robotConnected"/>
-            <indicator class="indicator" icon="robot" label="Robot Enabled" networkKey="TODO_KEY"/>
-            <indicator class="indicator" icon="robot-mower" label="Intake on" networkKey="intakeMotor"/>
-            <indicator class="indicator" icon="robot-industrial" label="Intake Down" networkKey="intakeExtended"/>
-            <indicator class="indicator" icon="elevator-up" label="Climbing" networkKey="TODO_KEY"/>
+            <indicator class="indicator" icon="car-connected" label="Robot Connected" v-bind:toggledValue="this.robotConnected" />
+            <indicator class="indicator" icon="robot" label="Robot Enabled" networkKey="RobotEnabled" />
+            <indicator class="indicator" icon="robot-mower" label="Intake on" networkKey="intakeMotor" />
+            <indicator class="indicator" icon="robot-industrial" label="Intake Down" networkKey="intakeExtended" />
+            <indicator class="indicator" icon="battery-alert" label="Brown Out" networkKey="PDP_Voltage" warn />
         </v-col>
         <v-col cols="3">
-            <indicator class="indicator" icon="transfer-up" label="Climber Extending" networkKey="TODO_KEY"/>
-            <indicator class="indicator" icon="ship-wheel" label="Spinning Wheel" spin networkKey="TODO_KEY"/>
-            <indicator class="indicator" icon="latitude" label="Shooter Spinning" spin v-bind:toggledValue="shootingWheelToggled"/>
-            <indicator class="indicator" icon="share-all" label="Shooter Ready" v-bind:toggledValue="shootingWheelSpeed"/>
+            <indicator class="indicator" icon="elevator-up" label="Climber Locked" warn networkKey="TODO_KEY" />
+            <indicator class="indicator" icon="elevator-up" label="Climbing" networkKey="TODO_KEY" />
+            <indicator class="indicator" icon="transfer-up" label="Climber Extending" networkKey="TODO_KEY" />
+            <indicator class="indicator" icon="ship-wheel" label="Spinning Wheel" spin networkKey="TODO_KEY" />
+            <indicator class="indicator" icon="latitude" label="Shooter Spinning" spin v-bind:toggledValue="shootingWheelToggled" />
+            <indicator class="indicator" icon="share-all" label="Shooter Ready" v-bind:toggledValue="shootingWheelSpeed" />
             <BallCounter /> 
         </v-col>
     </v-row>

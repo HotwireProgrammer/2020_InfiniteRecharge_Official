@@ -2,6 +2,7 @@
 import PIDChart from '../components/PIDChart';
 import MotorChart from '../components/MotorChart'
 import ControlButton from '../components/ControlButton'
+import * as logger from '../utils/logger'
 
 export default {
     name: 'DetailedPage',
@@ -13,6 +14,12 @@ export default {
     },
 
     data: () => ({ data: null}),
+    methods: {
+        endMatch: function() {
+            console.log("End Match  - ",  true);
+            logger.endMatchProcessing();
+        }
+    }
 };
 </script>
 
@@ -30,7 +37,6 @@ export default {
             <ControlButton togglable label="Raise/lower Intake" networkKey="toggle intake" />
             <ControlButton label="Spin Color Wheel" networkKey="spin color wheel" />
             <ControlButton label="Set Color" networkKey="set color" />
-            <!--
             <v-btn
                 class="auto-button"
                 outlined
@@ -39,7 +45,6 @@ export default {
                 @click="endMatch()">
                     End Match
             </v-btn>
-            -->
         </div>
     </v-col>
 

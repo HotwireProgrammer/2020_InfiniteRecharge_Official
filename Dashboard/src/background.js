@@ -170,7 +170,7 @@ function RobotClientConnections() {
         }
     });
     ipcMain.on('add', (event, mesg) => {
-        logger.logEvent('ICP: Add - ' + mesg);
+        // logger.logEvent(`ICP: Add - ${mesg.key}: ${mesg.val}`);
         client.Assign(mesg.val, mesg.key, (mesg.flags & 1) === 1);
     });
     ipcMain.on('update', (event, mesg) => {

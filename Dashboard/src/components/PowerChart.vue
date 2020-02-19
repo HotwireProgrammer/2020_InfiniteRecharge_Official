@@ -119,7 +119,7 @@ export default {
                 data: d
             }]
             // this.series[0].data = d;
-            logger.logData('voltA', newValue)
+            // logger.logData('voltA', newValue)
         }
     },
     mounted: function() {
@@ -135,11 +135,11 @@ export default {
                 tmp.push((addData(tmp)));
                 data.push(tmp);
             }
-            logger.logData('voltA', data[1][data[1].length-1])
-            logger.logData('voltB', data[2][data[2].length-1])
-            logger.logData('voltC', data[3][data[3].length-1])
-            logger.logData('voltD', data[4][data[4].length-1])
-            logger.logData('voltE', data[5][data[5].length-1])
+            // logger.logData('voltA', data[1][data[1].length-1])
+            // logger.logData('voltB', data[2][data[2].length-1])
+            // logger.logData('voltC', data[3][data[3].length-1])
+            // logger.logData('voltD', data[4][data[4].length-1])
+            // logger.logData('voltE', data[5][data[5].length-1])
 
             debugger;
 
