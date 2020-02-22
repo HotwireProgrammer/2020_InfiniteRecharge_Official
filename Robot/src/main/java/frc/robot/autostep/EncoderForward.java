@@ -25,11 +25,17 @@ public class EncoderForward extends AutoStep {
     }
 
     public void Update() {
-        
-        if (Math.abs(encoderStart - driveTrain.GetEncoder()) > encoderTarget) {
-            isDone = true;
+
+        double currentError = Math.abs(encoderStart - driveTrain.GetEncoder());
+        if (currentError > 150000) {
+            System.out.println("ERROR - Encoder target is too large. Something probably broke!");
             driveTrain.SetBothSpeed(0.0f);
+        } else {
+            if (currentError > encoderTarget) {
+                isDone = true;
+                driveTrain.SetBothSpeed(0.0f);
+            }
+            System.out.println(encoderStart - driveTrain.GetEncoder());
         }
-        System.out.println(encoderStart - driveTrain.GetEncoder());
     }
 }

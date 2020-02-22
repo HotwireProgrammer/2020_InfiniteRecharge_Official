@@ -12,10 +12,13 @@ public class Shoot extends AutoStep {
     public Shooter shooter;
     public double rpmTarget;
     public Indexer indexer;
-    public int ballsShot = 0;
-    public int ballsShotTarget;
-    public boolean beamBreakClear = false;
+    private int ballsShot = 0;
+    public boolean beamBreakClear = true;
     public Timer fifthBallTimer;
+    public int ballsShotTarget = 5;
+    private int tickStart = 0;
+
+    public boolean doingEnd = false;
 
     public Shoot(Shooter shooter, Indexer indexer, double rpmTarget, int ballsShotTarget) {
         super();
@@ -28,31 +31,23 @@ public class Shoot extends AutoStep {
     }
 
     public void Begin() {
+        tickStart = indexer.indexerFive.getSelectedSensorPosition();
         shooter.rpmTarget = rpmTarget;
         fifthBallTimer = new Timer();
-        fifthBallTimer.reset();
-    }
+        fifthBallTimer.stop();
 
-    public void Update() {
-        System.out.println(ballsShot);
-        if (indexer.beamBreakTop.get()) {
-            beamBreakClear = true;
-        }
-        if (!indexer.beamBreakTop.get() && beamBreakClear && shooter.UpToSpeed()) {
+        if (!indexer.beamBreakTop.get()) {
             beamBreakClear = false;
             ballsShot++;
         }
-        if (ballsShot == 5) {
-            fifthBallTimer.start();
-            ballsShot++;
-        }
-        if (fifthBallTimer.get() > 0.1) {
+    }
+
+    public void Update() {
+        if (Math.abs(tickStart - indexer.indexerFive.getSelectedSensorPosition()) < 700000){
+            indexer.RunManualForward(0.6f, 0.01f);
+        }else{
             isDone = true;
-            fifthBallTimer.stop();
-        }
-
-
-        indexer.RunManualForward();
+        }  
 
     }
 }

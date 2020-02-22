@@ -7,13 +7,15 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 
 public class Shooter {
 
-    public TalonSRX shooterTwo = new TalonSRX(50);
-    public TalonSRX shooterFive = new TalonSRX(51);
+    public TalonSRX shooterTwo = new TalonSRX(51);
+    public TalonSRX shooterFive = new TalonSRX(50);
 
     public double shooterP = 0.001;
     public double shooterI = 0.0005;
-    public double shooterD = 0.0;
+    public double shooterD = 0.0001;
     public double shooterRPMTarget;
+
+    public boolean didHitSpeed = true;
 
     String shooterPKey = "Shooter_P";
     String shooterIKey = "Shooter_I";
@@ -39,7 +41,7 @@ public class Shooter {
         rpmCurrent = TalonVelocityToRPM(shooterTwo.getSelectedSensorVelocity(), 1.0f);
     }
 
-    public void UpdatePID() {        
+    public void UpdatePID() {
         // Shooter code pid
         SmartDashboard.putNumber("Shooter_RPM", rpmCurrent);
 
@@ -65,10 +67,9 @@ public class Shooter {
         PowerManual((float) motorSpeed);
     }
 
-    public boolean UpToSpeed() {
+    public boolean UpToSpeed(float RPMBuffer) {
         double distance = Math.abs(rpmCurrent - rpmTarget);
-        System.out.println(" shooter distance " + distance);
-        return distance < (rpmTarget * 0.03f);
+        return distance < (rpmTarget * RPMBuffer);
     }
 
     public void PowerManual(float power) {

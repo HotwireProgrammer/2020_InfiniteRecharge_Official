@@ -1,5 +1,7 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Timer;
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -11,23 +13,26 @@ public class Limelight {
 
     public float turnBuffer;
 
+    private Timer timer = new Timer();
+
     // max is when the robot is far from the goal, min is when we're near the goal
     public float maxSpeed;
     public float minSpeed;
 
     public Limelight() {
-
+        timer.reset();
+        timer.start();
     }
 
     public void AutoSettings() {
-        turnBuffer = 0.3f;
-        maxSpeed = 0.2f;
-        minSpeed = 0.15f;
+        turnBuffer = 0.55f;
+        maxSpeed = 0.25f;// 2
+        minSpeed = 0.2f;
     }
 
     public void TeleopSettings() {
-        turnBuffer = 1.3f;
-        maxSpeed = 0.5f;
+        turnBuffer = 0.7f;
+        maxSpeed = 0.4f;
         minSpeed = 0.25f;
     }
 
@@ -35,7 +40,7 @@ public class Limelight {
         if (turnOn) {
             NetworkTableInstance.getDefault().getTable("limelight").getEntry("ledMode").setNumber(3);
         } else {
-            NetworkTableInstance.getDefault().getTable("limelight").getEntry("ledMode").setNumber(1);
+            NetworkTableInstance.getDefault().getTable("limelight").getEntry("ledMode").setNumber(3);// 1
         }
     }
 
@@ -74,18 +79,25 @@ public class Limelight {
 
                 driveTrain.SetLeftSpeed(currentSpeed * inverted);
                 driveTrain.SetRightSpeed(turnSpeedSlow * inverted);
+                
+                timer.reset();
+                timer.start();
 
             } else if (x * inverted < -turnBuffer) {
 
                 driveTrain.SetLeftSpeed(turnSpeedSlow * inverted);
                 driveTrain.SetRightSpeed(currentSpeed * inverted);
 
+                timer.reset();
+                timer.start();
             } else {
 
                 driveTrain.SetLeftSpeed(0.0f);
                 driveTrain.SetRightSpeed(0.0f);
-                return true;
-
+             
+                if (timer.get() > 0.1) {
+                    return true;
+                }
             }
         } else {
             driveTrain.SetBothSpeed(0.0f);

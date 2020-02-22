@@ -13,6 +13,8 @@ public class Wait extends AutoStep {
     public Wait(DriveTrain driveTrain, float length) {
         super();
         this.length = length;
+        driveTimer = new Timer();
+        this.driveTrain = driveTrain;
     }
 
     public void Begin() {
