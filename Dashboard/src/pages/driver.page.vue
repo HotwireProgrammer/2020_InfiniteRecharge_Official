@@ -52,7 +52,10 @@ export default {
     },
     mounted: function() {
         NetworkTables.addRobotConnectionListener(
-            (connected) => this.robotConnected = connected,
+            (connected) => {
+                console.log('robot connected', )
+                return this.robotConnected = connected
+            },
             true
         );
 
@@ -98,9 +101,7 @@ export default {
 
     <v-row no-gutters>
         <v-col cols="6">
-            <video class="video">
-                <source src="http://10.29.90.2:5800" type="video/mp4">
-            </video>
+            <img src="http://10.29.90.11:5800" class="limelight">
         </v-col>
         <v-col cols="3">
             <indicator class="indicator" icon="car-connected" label="Robot Connected" v-bind:toggledValue="this.robotConnected" />
@@ -165,7 +166,7 @@ export default {
         margin-bottom: -40px;
     }
 
-    .video {
+    .limelight {
         width:95%;
     }
 
