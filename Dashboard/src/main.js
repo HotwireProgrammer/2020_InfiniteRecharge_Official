@@ -10,7 +10,6 @@ import * as logger from './utils/logger'
 Vue.config.productionTip = false
 // IP address of the robot
 const IP_ADDRESS = '10.29.90.2';
-const IP_ADDRESS_WIRED = '10.29.90.22';
 const retryFreq = 10; //In seconds
 
 
@@ -26,28 +25,19 @@ new Vue({
         logger.logEvent('MOUNTED');
         NetworkTables.addRobotConnectionListener(onRobotConnection, false);
         if (!NetworkTables.isRobotConnected()) {
-            setTimeout(this.connectionRetryWireless, 500);
+            setTimeout(this.connectionRetry, 1000);
         }
         this.initDataLogging();
     },
     methods: {
-        connectionRetryWireless: function () {
+        connectionRetry: function () {
             // If the robot is connected do nothing
             if (NetworkTables.isRobotConnected()) return;
 
             // If no connection, try to connect again and then check again in 1 second
             logger.logEvent('Attepting robot connection to: ' + IP_ADDRESS);
             NetworkTables.connect(IP_ADDRESS);
-            setTimeout(this.connectionRetryWired, retryFreq * 500);
-        },
-        connectionRetryWired: function () {
-            // If the robot is connected do nothing
-            if (NetworkTables.isRobotConnected()) return;
-
-            // If no connection, try to connect again and then check again in 1 second
-            logger.logEvent('Attepting robot connection to: ' + IP_ADDRESS);
-            NetworkTables.connect(IP_ADDRESS_WIRED);
-            setTimeout(this.connectionRetryWireless, retryFreq * 500);
+            setTimeout(this.connectionRetry, retryFreq * 1000);
         },
         initDataLogging: function() {
             if (this.dataLoggingStarted) return;
@@ -63,11 +53,11 @@ new Vue({
                 NetworkTables.addKeyListener('/SmartDashboard/PDP_' + i, logger.logData);
             }
 
-            NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (enabled) => {
-                if (!enabled) {
-                    endMatchProcessing();
-                }
-            });
+            // NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (enabled) => {
+            //     if (!enabled) {
+            //         endMatchProcessing();
+            //     }
+            // });
         }
     }
 }).$mount('#app')

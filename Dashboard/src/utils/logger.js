@@ -2,9 +2,11 @@
 
 const fs = require('fs').promises;
 
-let basePath = 'src/logs/'
+let basePath = 'src/logs/';
 let errLogPath = basePath + 'error.log';
 let eventLogPath = basePath + 'event.log';
+
+const startTime = Date.now();
 
 fs.mkdir(`src/logs/data`, { recursive: true });
 
@@ -45,7 +47,7 @@ export async function logData(key, data) {
     }
 
     const dataLogPath = `${basePath}/data/${key}.log`
-    data += ',';
+    data = `${data}|${Date.now() - startTime},`;
     return fs.appendFile(dataLogPath, data)
         .catch(err => {
             console.log(err);

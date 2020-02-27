@@ -3,13 +3,13 @@
 <script>
 import DriverPage from './pages/driver.page';
 import DetailedPage from './pages/detailed.page';
-import { NetworkTables } from './utils/networktables'
-// import * as logger from './utils/logger'
+import { NetworkTables } from './utils/networktables';
+import * as logger from './utils/logger';
 
 import Vue from 'vue';
-import VueGoogleCharts from 'vue-google-charts'
+import VueGoogleCharts from 'vue-google-charts';
 
-Vue.use(VueGoogleCharts)
+Vue.use(VueGoogleCharts);
 
 export default {
     name: 'App',
@@ -29,6 +29,9 @@ export default {
         menuClick: function(page) {
             this.currentPage = page;
             this.drawer = !this.drawer;
+        },
+        endMatch: function() {
+            logger.endMatchProcessing();
         }
     }
 };
@@ -44,6 +47,10 @@ export default {
         <v-list-item class="nav-line" link @click="menuClick('Detailed')">
             <v-icon>mdi-contact-mail</v-icon>
             <span class="nav-text">Detailed</span>
+        </v-list-item>
+        <v-list-item class="nav-line" link @click="endMatch()">
+            <v-icon>mdi-contact-mail</v-icon>
+            <span class="nav-text">End Match</span>
         </v-list-item>
     </v-navigation-drawer>
 

@@ -35,8 +35,11 @@ export default {
                     text: 'Center Eight Ball',
                     value: 2
                 },{
-                    text: 'EMPTY',
+                    text: 'Center Five Ball',
                     value: 3
+                },{
+                    text: 'Right Six Ball',
+                    value: 4
                 }
             ]
         }
@@ -108,13 +111,13 @@ export default {
             <indicator class="indicator" icon="robot" label="Robot Enabled" networkKey="RobotEnabled" />
             <indicator class="indicator" icon="robot-mower" label="Intake on" networkKey="intakeMotor" />
             <indicator class="indicator" icon="robot-industrial" label="Intake Down" networkKey="intakeExtended" />
-            <indicator class="indicator" icon="battery-alert" label="Brown Out" networkKey="PDP_Voltage" warn />
+            <indicator class="indicator" icon="battery-alert" label="Brown Out" v-bind:toggledValue="this.brownedOut" warn />
         </v-col>
         <v-col cols="3">
             <indicator class="indicator" icon="elevator-up" label="Climber Locked" warn networkKey="TODO_KEY" />
             <indicator class="indicator" icon="elevator-up" label="Climbing" networkKey="TODO_KEY" />
             <indicator class="indicator" icon="transfer-up" label="Climber Extending" networkKey="TODO_KEY" />
-            <indicator class="indicator" icon="ship-wheel" label="Spinning Wheel" spin networkKey="TODO_KEY" />
+            <indicator class="indicator" icon="ship-wheel" label="Spinning Wheel" warn spin networkKey="TODO_KEY" />
             <indicator class="indicator" icon="latitude" label="Shooter Spinning" spin v-bind:toggledValue="shootingWheelToggled" />
             <indicator class="indicator" icon="share-all" label="Shooter Ready" v-bind:toggledValue="shootingWheelSpeed" />
             <BallCounter /> 
