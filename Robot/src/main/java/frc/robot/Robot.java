@@ -137,6 +137,9 @@ public class Robot extends TimedRobot {
 	// grab three balls
 	public LinkedList<AutoStep> centerEightBall;
 
+	public LinkedList<AutoStep> centerFiveBall;
+
+	public LinkedList<AutoStep> rightSixBall;
 	public int currentAutoStep;
 	// public float auto = 0;
 
@@ -201,11 +204,38 @@ public class Robot extends TimedRobot {
 		// Shooting
 		rightFiveBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
 		rightFiveBall.add(new Shoot(shooter, indexer, 3900.0, 5));
-		// All balls shoot
-		// rightFiveBall.add(new NavxTurn(driveTrain, navx, 0, .3f, 5.0f));
-		// rightFiveBall.add(new EncoderForward(driveTrain, 50000f, -0.25f));
-		// rightFiveBall.add(new NavxTurn(driveTrain, navx, 140, .3f, 5.0f));
-		// rightFiveBall.add(new EncoderForward(driveTrain, 70000f, -0.25f));
+
+		// right six ball ---------------
+		rightSixBall = new LinkedList<AutoStep>();
+		rightSixBall.add(new NavxReset(navx));
+		rightSixBall.add(new ShooterRev(shooter, 3900.0));
+		rightSixBall.add(new IntakeDrop(intakeSolenoid));
+		rightSixBall.add(new IntakeRun(intakeSeven, 1.0f));
+		// Configuration Complete
+		rightSixBall.add(new EncoderForward(driveTrain, 120000f, -0.3f));
+		// 5 balls intaked
+		rightSixBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
+		rightSixBall.add(new Shoot(shooter, indexer, 3900.0, 5));
+		//shooting done
+		
+	
+		// center five ball ------------
+		centerFiveBall = new LinkedList<AutoStep>();
+		centerFiveBall.add(new NavxReset(navx));
+		centerFiveBall.add(new ShooterRev(shooter, 4100.0));
+		centerFiveBall.add(new IntakeDrop(intakeSolenoid));
+		centerFiveBall.add(new IntakeRun(intakeSeven, 1.0f));
+		// Configuration Done
+		centerFiveBall.add(new EncoderForward(driveTrain, 65000f, -0.3f));
+		centerFiveBall.add(new NavxTurn(driveTrain, navx, -25, 0.4f, 4.0f));
+		centerFiveBall.add(new EncoderForward(driveTrain, 10000f, -0.2f));
+		centerFiveBall.add(new EncoderForward(driveTrain, 10000f, 0.2f));
+		centerFiveBall.add(new NavxTurn(driveTrain, navx, -50, 0.4f, 4.0f));
+		centerFiveBall.add(new EncoderForward(driveTrain, 20000f, -0.2f));
+		centerFiveBall.add(new EncoderForward(driveTrain, 2500f, 0.2f));
+		centerFiveBall.add(new NavxTurn(driveTrain, navx, 30, 0.4f, 4.0f));
+		centerFiveBall.add(new LimelightTrack(driveTrain, shooter, limelight, 1.0f));
+		centerFiveBall.add(new Shoot(shooter, indexer, 4100.0, 5));
 
 		// center eight ball -------------
 		centerEightBall = new LinkedList<AutoStep>();
@@ -221,7 +251,7 @@ public class Robot extends TimedRobot {
 		centerEightBall.add(new NavxTurn(driveTrain, navx, 90, .3f, 5.0f));
 		centerEightBall.add(new EncoderForward(driveTrain, 20000f, -0.3f));
 		// Balls intaked
-		centerEightBall.add(new EncoderForward(driveTrain, 14000f, 0.3f));
+		centerEightBall.add(new EncoderForward(driveTrain, 10000f, 0.3f));
 		centerEightBall.add(new NavxTurn(driveTrain, navx, 10, .9f, 4.0f));// 15
 		centerEightBall.add(new Wait(driveTrain, 0.1f));
 		centerEightBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
@@ -240,10 +270,9 @@ public class Robot extends TimedRobot {
 		double autoChoice = SmartDashboard.getNumber(autoSelectKey, 0);
 
 		// Overides Dashboard.
-		autoChoice = 1;
+		autoChoice = 4;
 
 		if (autoChoice == 0) {
-
 			autonomousSelected = mostBasicShoot;
 
 		} else if (autoChoice == 1) {
@@ -252,6 +281,11 @@ public class Robot extends TimedRobot {
 		} else if (autoChoice == 2) {
 			autonomousSelected = centerEightBall;
 
+		} else if (autoChoice == 3) {
+			autonomousSelected = centerFiveBall;
+		}else if (autoChoice == 4) {
+			autonomousSelected = rightSixBall;
+		
 		} else {
 			autonomousSelected = mostBasicShoot;
 		}
@@ -306,6 +340,7 @@ public class Robot extends TimedRobot {
 		shooter.Init();
 
 		driveTrain.SetCoast();
+		climber.lock();
 
 		// Controllers
 		driver = new Joystick(0);
@@ -452,7 +487,7 @@ public class Robot extends TimedRobot {
 			indexer.RunManualForward(-0.4f, 0.02f);
 			SmartDashboard.putNumber("ballCounter", 0);
 		} else {
-			indexer.RunAutomatic(operator.getRawButton(7));
+			indexer.RunAutomatic(true);
 			SmartDashboard.putNumber("ballCounter", indexer.ballCounter);
 		}
 

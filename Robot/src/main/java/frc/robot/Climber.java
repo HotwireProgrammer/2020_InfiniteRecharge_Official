@@ -38,6 +38,10 @@ public class Climber {
         lockDoubleSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
 
+    public void lock() {
+        lockDoubleSolenoid.set(DoubleSolenoid.Value.kForward);
+    }
+
     public void Reset() {
         pancakeDelay.reset();
         pancakeDelay.start();
