@@ -216,10 +216,8 @@ public class Robot extends TimedRobot {
 		// 5 balls intaked
 		rightSixBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
 		rightSixBall.add(new Shoot(shooter, indexer, 3900.0, 5));
-		//shooting done
-		
-	
-		// center five ball ------------
+		// shooting don
+
 		centerFiveBall = new LinkedList<AutoStep>();
 		centerFiveBall.add(new NavxReset(navx));
 		centerFiveBall.add(new ShooterRev(shooter, 4100.0));
@@ -270,7 +268,7 @@ public class Robot extends TimedRobot {
 		double autoChoice = SmartDashboard.getNumber(autoSelectKey, 0);
 
 		// Overides Dashboard.
-		autoChoice = 4;
+		// autoChoice = 4;
 
 		if (autoChoice == 0) {
 			autonomousSelected = mostBasicShoot;
@@ -283,14 +281,15 @@ public class Robot extends TimedRobot {
 
 		} else if (autoChoice == 3) {
 			autonomousSelected = centerFiveBall;
-		}else if (autoChoice == 4) {
+
+		} else if (autoChoice == 4) {
 			autonomousSelected = rightSixBall;
-		
+
 		} else {
 			autonomousSelected = mostBasicShoot;
 		}
 
-		System.out.println("Running Auto " + autoChoice);
+		System.out.println("Selected auto " + autoChoice);
 
 		// autonomousSelected = centerEightBall;
 		autonomousSelected.get(0).Begin();
@@ -387,8 +386,6 @@ public class Robot extends TimedRobot {
 		} else {
 			ColorTwo.set(ControlMode.PercentOutput, 0.0f);
 		}
-		
-
 
 		if (false) {
 			// Intake Sensor (31)
@@ -498,6 +495,7 @@ public class Robot extends TimedRobot {
 		// Climber
 		// Button9=LeftJoystickClick
 		// Button10=RightJoystickClick
+
 		if (operator.getRawButton(9)) {
 			if (operator.getRawButtonPressed(9)) {
 				climber.Reset();
