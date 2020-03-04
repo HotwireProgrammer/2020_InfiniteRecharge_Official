@@ -18,10 +18,7 @@ export default {
         return {
             autoModeValue: 0,
             colorSelectionValue: 0,
-            robotConnected: false,
             matchTime: 0,
-            shootingWheelToggled: false,
-            shootingWheelTarget: 0,
             shootingWheelSpeed: 0,
             brownedOut: false,
             autoModes: [
@@ -73,15 +70,6 @@ export default {
             }
         );
 
-
-        NetworkTables.addKeyListener(
-            "/SmartDashboard/Shooter_RPMTarget",
-            (k, val) => {
-                this.shootingWheelToggled = val > 0;
-                this.shootingWheelTarget = val;
-            }
-        );
-
         NetworkTables.addKeyListener(
             "/SmartDashboard/Shooter_Speed",
             (k, val) => {
@@ -107,26 +95,10 @@ export default {
             <img src="http://10.29.90.11:5800" class="limelight">
         </v-col>
         <v-col cols="3">
-            <indicator class="indicator" icon="car-connected" label="Robot Connected" v-bind:toggledValue="this.robotConnected" />
             <indicator class="indicator" icon="robot" label="Robot Enabled" networkKey="RobotEnabled" />
             <indicator class="indicator" icon="robot-mower" label="Intake on" networkKey="intakeMotor" />
             <indicator class="indicator" icon="robot-industrial" label="Intake Down" networkKey="intakeExtended" />
-            <indicator class="indicator" icon="battery-alert" label="Brown Out" v-bind:toggledValue="this.brownedOut" warn />
-        </v-col>
-        <v-col cols="3">
-            <indicator class="indicator" icon="elevator-up" label="Climber Locked" warn networkKey="TODO_KEY" />
-            <indicator class="indicator" icon="elevator-up" label="Climbing" networkKey="TODO_KEY" />
-            <indicator class="indicator" icon="transfer-up" label="Climber Extending" networkKey="TODO_KEY" />
-            <indicator class="indicator" icon="ship-wheel" label="Spinning Wheel" warn spin networkKey="TODO_KEY" />
-            <indicator class="indicator" icon="latitude" label="Shooter Spinning" spin v-bind:toggledValue="shootingWheelToggled" />
-            <indicator class="indicator" icon="share-all" label="Shooter Ready" v-bind:toggledValue="shootingWheelSpeed" />
-            <BallCounter /> 
-        </v-col>
-    </v-row>
-    <v-row no-gutters>
-        <v-col cols="6">
-            <div class="choices">
-                <v-select
+            <v-select
                     :items="autoModes"
                     label="Auto Mode"
                     v-model="autoModeValue"
@@ -136,13 +108,24 @@ export default {
                     class="auto-dropdown"
                     @change="updateAutoModes" 
                 ></v-select>
-                <img class="field-img" v-bind:src="getImgSrc()" />
-            </div>
+               <img class="field-img" v-bind:src="getImgSrc()" />
         </v-col>
-        <v-col cols="6">
+        <v-col cols="3">
+            <indicator class="indicator" icon="battery-alert" label="Brown Out" v-bind:toggledValue="this.brownedOut" warn />
+            <indicator class="indicator" icon="ship-wheel" label="Spinning Wheel" warn spin networkKey="TODO_KEY" />
+            <indicator class="indicator" icon="share-all" label="Shooter Ready" v-bind:toggledValue="shootingWheelSpeed" />
+            <BallCounter /> 
             <span class="match-time">
                 {{matchTime}} Seconds
             </span>
+        </v-col>
+    </v-row>
+    <v-row no-gutters>
+        <v-col cols="6">
+            <div class="choices">
+                
+ 
+            </div>
         </v-col>
     </v-row>
 </v-container>
