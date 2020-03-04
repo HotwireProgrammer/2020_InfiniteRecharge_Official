@@ -27,7 +27,7 @@ public class Limelight {
     public void AutoSettings() {
         turnBuffer = 0.55f;
         maxSpeed = 0.25f;// 2
-        minSpeed = 0.2f;
+        minSpeed = 0.15f;
     }
 
     public void TeleopSettings() {

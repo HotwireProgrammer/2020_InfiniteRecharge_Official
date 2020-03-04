@@ -216,7 +216,7 @@ public class Robot extends TimedRobot {
 		// 5 balls intaked
 		rightSixBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
 		rightSixBall.add(new Shoot(shooter, indexer, 3900.0, 5));
-		// shooting don
+		// shooting done
 
 		centerFiveBall = new LinkedList<AutoStep>();
 		centerFiveBall.add(new NavxReset(navx));
@@ -238,7 +238,7 @@ public class Robot extends TimedRobot {
 		// center eight ball -------------
 		centerEightBall = new LinkedList<AutoStep>();
 		centerEightBall.add(new NavxReset(navx));
-		centerEightBall.add(new ShooterRev(shooter, 4500.0));
+		centerEightBall.add(new ShooterRev(shooter, 3900.0));
 		centerEightBall.add(new IntakeDrop(intakeSolenoid));
 		centerEightBall.add(new IntakeRun(intakeSeven, 1.0f));
 		// Configuration Done
@@ -254,16 +254,16 @@ public class Robot extends TimedRobot {
 		centerEightBall.add(new Wait(driveTrain, 0.1f));
 		centerEightBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
 		// First Shooting Session
-		centerEightBall.add(new Shoot(shooter, indexer, 4500.0, 5));
-		centerEightBall.add(new ShooterRev(shooter, 3600.0));
-		centerEightBall.add(new NavxTurn(driveTrain, navx, -50, .4f, 5.0f)); // -85, .3
-		centerEightBall.add(new EncoderForward(driveTrain, 20000f, -0.4f));
-		centerEightBall.add(new NavxTurn(driveTrain, navx, 0, .5f, 5.0f)); // -5
-		centerEightBall.add(new Wait(driveTrain, 0.05f));
-		centerEightBall.add(new NavxTurn(driveTrain, navx, 0, .3f, 1.0f)); // -5
-		centerEightBall.add(new EncoderForward(driveTrain, 60000f, -0.6f));// 75000
-		centerEightBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
-		centerEightBall.add(new Shoot(shooter, indexer, 3600.0, 4));
+		centerEightBall.add(new Shoot(shooter, indexer, 3900.0, 5));
+		//centerEightBall.add(new ShooterRev(shooter, 3600.0));
+		//centerEightBall.add(new NavxTurn(driveTrain, navx, -50, .4f, 5.0f)); // -85, .3
+		//centerEightBall.add(new EncoderForward(driveTrain, 20000f, -0.4f));
+		//centerEightBall.add(new NavxTurn(driveTrain, navx, 0, .5f, 5.0f)); // -5
+		//centerEightBall.add(new Wait(driveTrain, 0.05f));
+		//centerEightBall.add(new NavxTurn(driveTrain, navx, 0, .3f, 1.0f)); // -5
+		//centerEightBall.add(new EncoderForward(driveTrain, 60000f, -0.6f));// 75000
+		//centerEightBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
+		//centerEightBall.add(new Shoot(shooter, indexer, 3600.0, 4));
 
 		double autoChoice = SmartDashboard.getNumber(autoSelectKey, 0);
 
@@ -274,16 +274,16 @@ public class Robot extends TimedRobot {
 			autonomousSelected = mostBasicShoot;
 
 		} else if (autoChoice == 1) {
-			autonomousSelected = rightFiveBall;
+			autonomousSelected = rightFiveBall;// TrenchFiveBall
 
 		} else if (autoChoice == 2) {
-			autonomousSelected = centerEightBall;
+			autonomousSelected = centerEightBall;// RightEightBall
 
 		} else if (autoChoice == 3) {
 			autonomousSelected = centerFiveBall;
 
 		} else if (autoChoice == 4) {
-			autonomousSelected = rightSixBall;
+			autonomousSelected = rightSixBall;// TrenchSixBall
 
 		} else {
 			autonomousSelected = mostBasicShoot;
@@ -439,19 +439,12 @@ public class Robot extends TimedRobot {
 		if (operator.getRawButton(2)) {
 			intakeSeven.set(ControlMode.PercentOutput, intakeSpeed);
 			SmartDashboard.putNumber("intakeMotor", intakeSpeed);
-			// floorBeltEight.set(ControlMode.PercentOutput, -0.0f);
-			// indexerFive.set(ControlMode.PercentOutput, -0.5f);
 		} else if (operator.getRawButton(4)) {
 			intakeSeven.set(ControlMode.PercentOutput, -intakeSpeed);
 			SmartDashboard.putNumber("intakeMotor", -intakeSpeed);
-
-			// floorBeltEight.set(ControlMode.PercentOutput, -0.0f);
-			// indexerFive.set(ControlMode.PercentOutput, -0.5f);
 		} else {
 			intakeSeven.set(ControlMode.PercentOutput, 0.0f);
 			SmartDashboard.putNumber("intakeMotor", 0.0f);
-
-			// indexerFive.set(ControlMode.PercentOutput, 0.0f);
 		}
 
 		// Intake Solenoid 1=A
@@ -478,13 +471,13 @@ public class Robot extends TimedRobot {
 
 		// Indexer 3=X 6=Right Bumper 8=Start
 		if (operator.getRawButton(6)) {
-			indexer.RunManualForward(0.4f, 0.02f);
+			indexer.RunManualForward(0.4f, 0.05f);
 			SmartDashboard.putNumber("ballCounter", 0);
 		} else if (operator.getRawButton(8)) { // Manual Override Backwards
-			indexer.RunManualForward(-0.4f, 0.02f);
+			indexer.RunManualForward(-0.4f, 0.05f);
 			SmartDashboard.putNumber("ballCounter", 0);
 		} else {
-			indexer.RunAutomatic(true);
+			indexer.RunAutomatic(operator.getRawButton(2));
 			SmartDashboard.putNumber("ballCounter", indexer.ballCounter);
 		}
 
@@ -559,7 +552,174 @@ public class Robot extends TimedRobot {
 		System.out.println(SmartDashboard.getNumber("autoMode", 0));
 		limelight.SetLight(true);
 		System.out.println(navx.getYaw() + " Navx");
-		driveTrain.SetBothSpeed(0.0f);
+		// driveTrain.SetBothSpeed(0.0f);
+
+		RobotControl(true);
+	}
+
+	public void RobotControl(boolean testMode) {
+		SendPDPData();
+
+		indexer.DebugPrint();
+		shooter.Update();
+
+		// Match Time
+		// SmartDashboard.putNumber("MatchTime",
+		// DriverStation.getInstance().getMatchTime());
+
+		// Color Wheel
+
+		// Color Wheel
+		if (flightStickLeft.getRawButton(1)) {
+			ColorTwo.set(ControlMode.PercentOutput, 0.5f);
+		} else {
+			ColorTwo.set(ControlMode.PercentOutput, 0.0f);
+		}
+
+		if (false) {
+			// Intake Sensor (31)
+			if (ColorWheelLimit.get() == true && !limitPressed) {
+				limitPressed = true;
+				colorChangsCount = colorChangsCount + 1;
+			}
+			if (ColorWheelLimit.get() == false) {
+				limitPressed = false;
+			}
+			// Color Sensor (25)
+			// ColorWheel currentColor = GetCurrentColor();
+			// if (currentColor != LastColor && currentColor != ColorWheel.Unknown) {
+			// colorChangsCount = colorChangsCount + 1;
+			// LastColor = currentColor;
+			// }
+
+			// Reset Color Changes Number
+			if (flightStickLeft.getRawButton(8)) {
+				colorChangsCount = 0;
+			}
+
+			// Color Wheel Spin
+			if (flightStickLeft.getRawButton(9)) {
+				if (colorChangsCount <= 31) {// 25
+					MotorSeven.set(ControlMode.PercentOutput, 1.0f);
+				} else {
+					MotorSeven.set(ControlMode.PercentOutput, 0.0f);
+				}
+
+			} else {
+				if (flightStickLeft.getRawButton(10)) {
+					MotorSeven.set(ControlMode.PercentOutput, 0.5f);
+				} else {
+					MotorSeven.set(ControlMode.PercentOutput, 0.0f);
+				}
+			}
+
+			// Color Wheel Find
+			if (flightStickLeft.getRawButton(11)) {
+				if (GetTargetColor() != LastColor) {
+					MotorSeven.set(ControlMode.PercentOutput, 1.0f);
+				} else {
+					MotorSeven.set(ControlMode.PercentOutput, 0.0f);
+				}
+			}
+		}
+
+		// Intake 2=B, 4=Y
+		double intakeSpeed = 0.8f;
+		if (operator.getRawButton(2)) {
+			intakeSeven.set(ControlMode.PercentOutput, intakeSpeed);
+			SmartDashboard.putNumber("intakeMotor", intakeSpeed);
+			// floorBeltEight.set(ControlMode.PercentOutput, -0.0f);
+			// indexerFive.set(ControlMode.PercentOutput, -0.5f);
+		} else if (operator.getRawButton(4)) {
+			intakeSeven.set(ControlMode.PercentOutput, -intakeSpeed);
+			SmartDashboard.putNumber("intakeMotor", -intakeSpeed);
+
+			// floorBeltEight.set(ControlMode.PercentOutput, -0.0f);
+			// indexerFive.set(ControlMode.PercentOutput, -0.5f);
+		} else {
+			intakeSeven.set(ControlMode.PercentOutput, 0.0f);
+			SmartDashboard.putNumber("intakeMotor", 0.0f);
+
+			// indexerFive.set(ControlMode.PercentOutput, 0.0f);
+		}
+
+		// Intake Solenoid 1=A
+		if (operator.getRawButtonPressed(1)) {
+			if (intakeSolenoid.get() == Value.kForward) {
+				intakeDown();
+			} else if (intakeSolenoid.get() == Value.kReverse) {
+				intakeUp();
+			} else {
+				intakeUp();
+			}
+		}
+
+		// Shooter 5=Left Bumper
+		shooter.rpmTarget = SmartDashboard.getNumber(shooter.shooterRPMKey, shooter.shooterRPMTarget);
+		if (operator.getRawButton(5)) {
+			shooter.rpmTarget = 3900;
+			// SmartDashboard.putNumber(shooter.shooterRPMKey, 5700);
+			limelight.SetLight(true);
+		} else {
+			limelight.SetLight(false);
+		}
+		shooter.UpdatePID();
+
+		// Indexer 3=X 6=Right Bumper 8=Start
+		if (operator.getRawButton(6)) {
+			indexer.RunManualForward(0.4f, 0.02f);
+			SmartDashboard.putNumber("ballCounter", 0);
+		} else if (operator.getRawButton(8)) { // Manual Override Backwards
+			indexer.RunManualForward(-0.4f, 0.02f);
+			SmartDashboard.putNumber("ballCounter", 0);
+		} else if (!testMode) {
+			indexer.RunAutomatic(true);
+			SmartDashboard.putNumber("ballCounter", indexer.ballCounter);
+		} else if (testMode) {
+			if (operator.getRawButton(7)) {
+				indexer.RunAutomatic(true);
+			} else {
+				indexer.RunAutomatic(false);
+			}
+		}
+
+		if (operator.getRawButtonPressed(7)) {
+			// indexer.floorBeltToggle = !indexer.floorBeltToggle;
+		}
+
+		// Climber
+		// Button9=LeftJoystickClick
+		// Button10=RightJoystickClick
+
+		if (operator.getRawButton(9)) {
+			if (operator.getRawButtonPressed(9)) {
+				climber.Reset();
+			}
+			climber.climbMotors(0.5f);
+		} else if (operator.getRawButton(10)) {
+			if (operator.getRawButtonPressed(10)) {
+				climber.Reset();
+			}
+			climber.climbMotors(-0.5f);
+		} else {
+			if (operator.getRawButtonReleased(9) || operator.getRawButtonReleased(10)) {
+				climber.Reset();
+			}
+			climber.climbMotors(0.0f);
+		}
+
+		if (flightStickLeft.getRawButton(6) || (flightStickLeft.getRawButton(7))) {
+			if (flightStickLeft.getRawButton(6)) {
+				limelight.Position(driveTrain, 1, 0);
+			} else {
+				limelight.Position(driveTrain, -1, 0);
+			}
+
+		} else {
+			ControllerDrive();
+		}
+
+		UpdateMotors();
 	}
 
 	public void ControllerDrive() {

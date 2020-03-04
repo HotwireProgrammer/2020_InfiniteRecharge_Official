@@ -29,16 +29,16 @@ export default {
                     text: 'Most Basic Shoot',
                     value: 0
                 },{
-                    text: 'Right Five Ball',
+                    text: 'Trench Five Ball',
                     value: 1
                 },{
-                    text: 'Center Eight Ball',
+                    text: 'Right Eight Ball',
                     value: 2
                 },{
                     text: 'Center Five Ball',
                     value: 3
                 },{
-                    text: 'Right Six Ball',
+                    text: 'Trench Six Ball',
                     value: 4
                 }
             ]
