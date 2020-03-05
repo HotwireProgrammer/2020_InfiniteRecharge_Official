@@ -1,5 +1,6 @@
 <script>
 import { NetworkTables } from '../utils/networktables'
+import MatchTimer from '../components/MatchTimer'
 import Indicator from '../components/Indicator'
 import BallCounter from '../components/BallCounter'
 
@@ -12,13 +13,13 @@ export default {
     components: {
         Indicator,
         BallCounter,
+        MatchTimer
     },
 
     data: function() {
         return {
             autoModeValue: 0,
             colorSelectionValue: 0,
-            matchTime: 0,
             shootingWheelSpeed: 0,
             brownedOut: false,
             autoModes: [
@@ -77,12 +78,6 @@ export default {
                 this.shootingWheelSpeed = val;
             }
         );
-         NetworkTables.addKeyListener(
-            "/SmartDashboard/MatchTime",
-            (k, val) => {
-                this.matchTime = val;
-            }
-        );
     }
 };
 </script>
@@ -99,33 +94,23 @@ export default {
             <indicator class="indicator" icon="robot-mower" label="Intake on" networkKey="intakeMotor" />
             <indicator class="indicator" icon="robot-industrial" label="Intake Down" networkKey="intakeExtended" />
             <v-select
-                    :items="autoModes"
-                    label="Auto Mode"
-                    v-model="autoModeValue"
-                    outlined
-                    color="primary"
-                    item-color="primary"
-                    class="auto-dropdown"
-                    @change="updateAutoModes" 
-                ></v-select>
-               <img class="field-img" v-bind:src="getImgSrc()" />
+                :items="autoModes"
+                label="Auto Mode"
+                v-model="autoModeValue"
+                outlined
+                color="primary"
+                item-color="primary"
+                class="auto-dropdown"
+                @change="updateAutoModes" 
+            ></v-select>
+            <img class="field-img" v-bind:src="getImgSrc()" />
         </v-col>
         <v-col cols="3">
+            <MatchTimer />
             <indicator class="indicator" icon="battery-alert" label="Brown Out" v-bind:toggledValue="this.brownedOut" warn />
             <indicator class="indicator" icon="ship-wheel" label="Spinning Wheel" warn spin networkKey="TODO_KEY" />
             <indicator class="indicator" icon="share-all" label="Shooter Ready" v-bind:toggledValue="shootingWheelSpeed" />
             <BallCounter /> 
-            <span class="match-time">
-                {{matchTime}} Seconds
-            </span>
-        </v-col>
-    </v-row>
-    <v-row no-gutters>
-        <v-col cols="6">
-            <div class="choices">
-                
- 
-            </div>
         </v-col>
     </v-row>
 </v-container>

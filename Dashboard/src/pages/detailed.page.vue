@@ -1,7 +1,7 @@
 <script>
 import PIDChart from '../components/PIDChart';
+import PidInputs from '../components/PidInputs';
 import MotorChart from '../components/MotorChart'
-import ControlButton from '../components/ControlButton'
 import * as logger from '../utils/logger'
 
 export default {
@@ -10,10 +10,14 @@ export default {
     components: {
         PIDChart,
         MotorChart,
-        ControlButton
+        PidInputs
     },
 
-    data: () => ({ data: null}),
+    data: function() {
+        return {
+            pidList: ["thing1", "thing2"]
+        };
+    },  
     methods: {
         endMatch: function() {
             console.log("End Match  - ",  true);
@@ -27,24 +31,9 @@ export default {
 <v-container class="fill-height" fluid>
     <PIDChart class="pid-chart" />
     <MotorChart class="chart" />
-
-    <v-col cols="3">
-        <div class="actions">
-            <ControlButton togglable label="Toggle Shooter Wheel" networkKey="toggle shooter" />
-            <ControlButton label="Shoot Balls" networkKey="toggle shooter" />
-            <ControlButton togglable label="Climb" networkKey="climb" />
-            <ControlButton label="Reach up" networkKey="reach up" />
-            <ControlButton togglable label="Raise/lower Intake" networkKey="toggle intake" />
-            <ControlButton label="Spin Color Wheel" networkKey="spin color wheel" />
-            <ControlButton label="Set Color" networkKey="set color" />
-            <v-btn
-                class="auto-button"
-                outlined
-                color="primary"
-                height="55"
-                @click="endMatch()">
-                    End Match
-            </v-btn>
+    <v-col cols="6">
+        <div class="actions" v-for="str in pidList" :key="str">
+            <PidInputs :baseStr="str" />
         </div>
     </v-col>
 

@@ -64,11 +64,12 @@ new Vue({
                 NetworkTables.addKeyListener('/SmartDashboard/PDP_' + i, logger.logData);
             }
 
-            // NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (enabled) => {
-            //     if (!enabled) {
-            //         endMatchProcessing();
-            //     }
-            // });
+            NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (enabled) => {
+                if (!enabled) {
+                    console.log('endofmatch');
+                    endMatchProcessing();
+                }
+            });
         }
     }
 }).$mount('#app')
