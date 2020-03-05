@@ -29,9 +29,11 @@ export default {
 
 <template>
 <v-container class="fill-height" fluid>
-    <PIDChart class="pid-chart" />
-    <MotorChart class="chart" />
     <v-col cols="6">
+        <MotorChart class="amp-chart" />
+    </v-col>
+    <v-col cols="6">
+        <PIDChart class="pid-chart" />
         <div class="actions" v-for="str in pidList" :key="str">
             <PidInputs :baseStr="str" />
         </div>
@@ -42,6 +44,9 @@ export default {
 
 <style scoped lang="scss">>
 .pid-chart {
-    width: 600px;
+    width: 100%;
+}
+.amp-chart {
+    width: 100%;
 }
 </style>
