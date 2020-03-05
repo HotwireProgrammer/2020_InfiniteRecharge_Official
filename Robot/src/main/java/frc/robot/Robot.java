@@ -505,7 +505,26 @@ public class Robot extends TimedRobot {
 			}
 			climber.climbMotors(0.0f);
 		}
-
+			//Climber alt Controls
+				/*
+			if (operator.getRawButton(9)) {
+				if (operator.getRawButtonPressed(9)) {
+					climber.Reset();
+				}
+				climber.climbMotors(0.5f);
+			} else if (operator.getRawButton(10)) {
+				if (operator.getRawButtonPressed(10)) {
+					climber.Reset();
+				}
+				climber.climbMotors(-0.5f);
+			} else {
+				if (operator.getRawButtonReleased(9) || operator.getRawButtonReleased(10)) {
+					climber.Reset();
+				}
+				climber.climbMotors(0.0f);
+			}
+				*/
+		//Lime Light
 		if (flightStickLeft.getRawButton(6) || (flightStickLeft.getRawButton(7))) {
 			if (flightStickLeft.getRawButton(6)) {
 				limelight.Position(driveTrain, 1, 0);
