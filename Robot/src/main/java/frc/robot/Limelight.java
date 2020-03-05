@@ -26,7 +26,7 @@ public class Limelight {
 
     public void AutoSettings() {
         turnBuffer = 0.55f;
-        maxSpeed = 0.25f;// 2
+        maxSpeed = 0.25f;
         minSpeed = 0.15f;
     }
 
@@ -71,15 +71,19 @@ public class Limelight {
             float minArea = 0.26f;
             float currentAreaPercentage = ((float) area - minArea) / (maxArea - minArea);
 
-            float currentSpeed = Lerp(minSpeed, maxSpeed, currentAreaPercentage);
-
+            // float currentSpeed = Lerp(minSpeed, maxSpeed, currentAreaPercentage);
+            float p = 0.045f;
+            float currentSpeed = (float) Math.abs(x) * p;
+            if (currentSpeed < 0.25f) {
+                currentSpeed = 0.25f;
+            }
             float turnSpeedSlow = -currentSpeed * 0.25f;
 
             if (x * inverted > turnBuffer) {
 
                 driveTrain.SetLeftSpeed(currentSpeed * inverted);
                 driveTrain.SetRightSpeed(turnSpeedSlow * inverted);
-                
+
                 timer.reset();
                 timer.start();
 
@@ -94,7 +98,7 @@ public class Limelight {
 
                 driveTrain.SetLeftSpeed(0.0f);
                 driveTrain.SetRightSpeed(0.0f);
-             
+
                 if (timer.get() > 0.1) {
                     return true;
                 }
