@@ -9,6 +9,8 @@ public class Shooter {
 
     public TalonSRX shooterTwo = new TalonSRX(51);
     public TalonSRX shooterFive = new TalonSRX(50);
+    
+    public Limelight limelight;
 
     public double shooterP = 0.001;
     public double shooterI = 0.0005;
@@ -27,6 +29,10 @@ public class Shooter {
     public double rpmTarget = 0;
 
     public float rpmCurrent = 0;
+
+    public Shooter(Limelight limelight) {
+        this.limelight = limelight;
+    } 
 
     public void Init() {
         SmartDashboard.putNumber(shooterPKey, shooterP);

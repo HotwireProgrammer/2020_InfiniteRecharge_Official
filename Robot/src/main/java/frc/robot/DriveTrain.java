@@ -2,17 +2,15 @@ package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDOutput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class DriveTrain implements PIDOutput {
+public class DriveTrain {
 	JoshMotorControllor joshmotorcontrollorLeftBottomOne;
 	JoshMotorControllor joshmotorcontrollorLeftBottomTwo;
 	JoshMotorControllor joshmotorcontrollorRightBottomOne;
 	JoshMotorControllor joshmotorcontrollorRightBottomTwo;
 	float lerpSpeed = 0.8f;
 	public AHRS navx;
-	PIDController turnController;
 
 	public DriveTrain(int pwm1, int pwm2, int pwm3, int pwm4, AHRS navx) {
 		joshmotorcontrollorLeftBottomOne = new JoshMotorControllor(pwm1, lerpSpeed);
@@ -21,12 +19,6 @@ public class DriveTrain implements PIDOutput {
 		joshmotorcontrollorRightBottomTwo = new JoshMotorControllor(pwm4, lerpSpeed);
 
 		this.navx = navx;
-		turnController = new PIDController(5.00, 1.0, 0.00020, 0, this.navx, this);
-		turnController.setInputRange(-180.0f, 180.0f);
-		turnController.setOutputRange(-1.0f, 1.0f);
-		turnController.setAbsoluteTolerance(2.0);
-		turnController.setContinuous(true);
-		turnController.disable();
 	}
 
 	public void Update() {
@@ -34,6 +26,13 @@ public class DriveTrain implements PIDOutput {
 		joshmotorcontrollorLeftBottomTwo.UpdateMotor();
 		joshmotorcontrollorRightBottomOne.UpdateMotor();
 		joshmotorcontrollorRightBottomTwo.UpdateMotor();
+	}
+
+	public void SendData() {
+		SmartDashboard.putNumber("DriveTrain_LeftOne", joshmotorcontrollorLeftBottomOne.talon.getTemperature());
+		SmartDashboard.putNumber("DriveTrain_LeftTwo", joshmotorcontrollorLeftBottomTwo.talon.getTemperature());
+		SmartDashboard.putNumber("DriveTrain_RightOne", joshmotorcontrollorRightBottomOne.talon.getTemperature());
+		SmartDashboard.putNumber("DriveTrain_RightTwo", joshmotorcontrollorRightBottomTwo.talon.getTemperature());
 	}
 
 	public void SetLeftSpeed(float Speed) {
@@ -67,7 +66,8 @@ public class DriveTrain implements PIDOutput {
 	}
 
 	public void DriveStraight(float speed, boolean reverse) {
-		float pidError = (float) turnController.get();
+		// float pidError = (float) turnController.get();
+		float pidError = 0f;
 		SetLeftSpeed((speed * pidError) + speed); // 0.6972
 		SetRightSpeed(((speed) - (speed * pidError)) * -1); // -0.583
 
@@ -75,26 +75,9 @@ public class DriveTrain implements PIDOutput {
 		if (reverse) {
 			speed = -speed;
 		}
-
-		// This stuff here is important!
-		System.out.println("STRAIGHT YAW " + navx.getYaw() + ";");
-		System.out.println("P: " + turnController.getP() + ";");
-		System.out.println("I: " + turnController.getI() + ";");
-		System.out.println("D: " + turnController.getD() + ";");
-		System.out.println("F: " + turnController.getF() + ";");
-	}
-
-	public void ClearRotation() {
-		navx.zeroYaw();
-		turnController.setSetpoint(0);
 	}
 
 	public double GetEncoder() {
 		return joshmotorcontrollorLeftBottomOne.talon.getSelectedSensorPosition();
 	}
-
-	@Override
-	public void pidWrite(double output) {
-	}
-
 }

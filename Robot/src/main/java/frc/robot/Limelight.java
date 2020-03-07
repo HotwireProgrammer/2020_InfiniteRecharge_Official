@@ -19,6 +19,8 @@ public class Limelight {
     public float maxSpeed;
     public float minSpeed;
 
+    public float xAdjust;
+
     public Limelight() {
         timer.reset();
         timer.start();
@@ -44,9 +46,52 @@ public class Limelight {
         }
     }
 
-    public boolean Position(DriveTrain driveTrain, float inverted, double xAdjust) {
+    public double GetArea() {
+        NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+        NetworkTableEntry ta = table.getEntry("ta");
+        NetworkTableEntry tv = table.getEntry("tv");
+
+        if (tv.getDouble(0.0f) > 0) {
+            return ta.getDouble(0.0);
+        }
+
+        return 0.0;
+    }
+
+    public boolean OnTarget() {
+        NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+        NetworkTableEntry tx = table.getEntry("tx");
+        NetworkTableEntry ty = table.getEntry("ty");
+        NetworkTableEntry ta = table.getEntry("ta");
+        NetworkTableEntry tv = table.getEntry("tv");
+
+        // Make sure we have valid targets first
+        if (tv.getDouble(0.0f) > 0) {
+
+            double x = tx.getDouble(0.0) + xAdjust;
+            double y = ty.getDouble(0.0);
+            double area = ta.getDouble(0.0);
+
+            NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(0);
+
+            if (x * inverted > turnBuffer) {
+                return false;
+            } else if (x * inverted < -turnBuffer) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+        }
+        return true;
+    }
+
+    public boolean Position(DriveTrain driveTrain, float inverted, double xAdj) {
+
+        this.xAdjust = (float)xAdj;
 
         SetLight(true);
+        driveTrain.SetBreak();
 
         // Flip xadjust for easier tuning. Set xadjust negative to aim rigt, positive to
         // aim left.
@@ -72,7 +117,7 @@ public class Limelight {
             float currentAreaPercentage = ((float) area - minArea) / (maxArea - minArea);
 
             // float currentSpeed = Lerp(minSpeed, maxSpeed, currentAreaPercentage);
-            float p = 0.045f;
+            float p = 0.04f;
             float currentSpeed = (float) Math.abs(x) * p;
             if (currentSpeed < 0.25f) {
                 currentSpeed = 0.25f;
