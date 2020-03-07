@@ -76,32 +76,32 @@ export default {
 <template>
   <div>
     <trend :data="rpmData" auto-draw :gradient="['#ff3d00']"></trend>
-    <v-row no-gutters>
-      <v-col cols="1">
-        <v-text-field label="P" v-model="pVal"></v-text-field>
-      </v-col>
-      <v-col cols="1">
-        <v-text-field label="I" v-model="iVal"></v-text-field>
-      </v-col>
-      <v-col cols="1">
-        <v-text-field label="D" v-model="dVal"></v-text-field>
-      </v-col>
-      <v-col cols="1">
-        <v-text-field label="PRM Goal" v-model="rpmGoalVal"></v-text-field>
-      </v-col>
-      <v-col cols="1">
-        <v-text-field label="Tolerance" v-model="tolerance"></v-text-field>
-      </v-col>
-      <v-col cols="1">
-        <v-btn outlined color="primary" @click="send()">Send</v-btn>
-      </v-col>
-    </v-row>
     <v-row>
-      <v-col cols="2">
+      <v-col cols="4">
           Speed: {{Math.floor(speedvalue * 100)}} %
       </v-col>
-      <v-col cols="2">
+      <v-col cols="4">
           RPMs: <span :class="isInTolerance ? 'acceptable' :'' ">{{Math.floor(rpmData[rpmData.length - 1])}}</span>
+      </v-col>
+    </v-row>
+    <v-row no-gutters>
+      <v-col cols="2">
+        <v-text-field label="P" v-model="pVal"></v-text-field>
+      </v-col>
+      <v-col cols="2">
+        <v-text-field label="I" v-model="iVal"></v-text-field>
+      </v-col>
+      <v-col cols="2">
+        <v-text-field label="D" v-model="dVal"></v-text-field>
+      </v-col>
+      <v-col cols="2">
+        <v-text-field label="PRM Goal" v-model="rpmGoalVal"></v-text-field>
+      </v-col>
+      <v-col cols="2">
+        <v-text-field label="Tolerance" v-model="tolerance"></v-text-field>
+      </v-col>
+      <v-col cols="2">
+        <v-btn outlined color="primary" @click="send()">Send</v-btn>
       </v-col>
     </v-row>
   </div>

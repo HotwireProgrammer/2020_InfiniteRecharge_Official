@@ -1,7 +1,8 @@
 <script>
 import PIDChart from '../components/PIDChart';
+import PidInputs from '../components/PidInputs';
 import MotorChart from '../components/MotorChart'
-import ControlButton from '../components/ControlButton'
+import TempChart from '../components/TempChart'
 import * as logger from '../utils/logger'
 
 export default {
@@ -10,10 +11,15 @@ export default {
     components: {
         PIDChart,
         MotorChart,
-        ControlButton
+        TempChart,
+        PidInputs
     },
 
-    data: () => ({ data: null}),
+    data: function() {
+        return {
+            pidList: ["thing1", "thing2"]
+        };
+    },  
     methods: {
         endMatch: function() {
             console.log("End Match  - ",  true);
@@ -25,34 +31,31 @@ export default {
 
 <template>
 <v-container class="fill-height" fluid>
-    <PIDChart class="pid-chart" />
-    <MotorChart class="chart" />
-
-    <v-col cols="3">
-        <div class="actions">
-            <ControlButton togglable label="Toggle Shooter Wheel" networkKey="toggle shooter" />
-            <ControlButton label="Shoot Balls" networkKey="toggle shooter" />
-            <ControlButton togglable label="Climb" networkKey="climb" />
-            <ControlButton label="Reach up" networkKey="reach up" />
-            <ControlButton togglable label="Raise/lower Intake" networkKey="toggle intake" />
-            <ControlButton label="Spin Color Wheel" networkKey="spin color wheel" />
-            <ControlButton label="Set Color" networkKey="set color" />
-            <v-btn
-                class="auto-button"
-                outlined
-                color="primary"
-                height="55"
-                @click="endMatch()">
-                    End Match
-            </v-btn>
-        </div>
-    </v-col>
+    <v-row>
+        <v-col cols="6">
+            <MotorChart class="amp-chart" />
+        </v-col>
+        <v-col cols="6">
+            <TempChart class="amp-chart" />
+        </v-col>
+    </v-row>
+    <v-row>
+        <v-col cols="12">
+            <PIDChart class="pid-chart" />
+            <div class="actions" v-for="str in pidList" :key="str">
+                <PidInputs :baseStr="str" />
+            </div>
+        </v-col>
+    </v-row>
 
 </v-container>
 </template>
 
 <style scoped lang="scss">>
 .pid-chart {
-    width: 600px;
+    width: 100%;
+}
+.amp-chart {
+    width: 100%;
 }
 </style>

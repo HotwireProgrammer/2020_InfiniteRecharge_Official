@@ -59,16 +59,21 @@ new Vue({
             NetworkTables.addKeyListener('/SmartDashboard/PDP_Voltage', logger.logData);
             NetworkTables.addKeyListener('/SmartDashboard/Shooter_Speed', logger.logData);
             NetworkTables.addKeyListener('/SmartDashboard/Shooter_RPM', logger.logData);
+            this.data[0].push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_LeftOne', logger.logData));
+            this.data[1].push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_LeftTwo', logger.logData));
+            this.data[2].push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_RightOne', logger.logData));
+            this.data[3].push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_RightTwo', logger.logData));
 
             for (let i = 0; i < 15; i++) {
                 NetworkTables.addKeyListener('/SmartDashboard/PDP_' + i, logger.logData);
             }
 
-            // NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (enabled) => {
-            //     if (!enabled) {
-            //         endMatchProcessing();
-            //     }
-            // });
+            NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (enabled) => {
+                if (!enabled) {
+                    console.log('endofmatch');
+                    endMatchProcessing();
+                }
+            });
         }
     }
 }).$mount('#app')

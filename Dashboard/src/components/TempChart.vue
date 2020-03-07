@@ -3,7 +3,7 @@ import { NetworkTables } from '../utils/networktables'
 import zingchartVue from 'zingchart-vue';
 
 export default {
-    name: 'MotorChart',
+    name: 'TempChart',
 
     components: { zingchartVue },
     mounted: function(){
@@ -11,12 +11,10 @@ export default {
     },
     methods: {
         updateGraph(callback) {
-            for (let i = 0; i < 15; i++) {
-                this.ampVals[i].push(NetworkTables.getValue('/SmartDashboard/PDP_' + i, 0));
-                if (this.ampVals[i].length > 40) {
-                    this.ampVals[i].shift();
-                }
-            }
+            this.data[0].push(NetworkTables.getValue('/SmartDashboard/DriveTrain_LeftOne', 0));
+            this.data[1].push(NetworkTables.getValue('/SmartDashboard/DriveTrain_LeftTwo', 0));
+            this.data[2].push(NetworkTables.getValue('/SmartDashboard/DriveTrain_RightOne', 0));
+            this.data[3].push(NetworkTables.getValue('/SmartDashboard/DriveTrain_RightTwo', 0));
         },
         startChart() {
             this.chartIntervalId = setInterval(() => {
@@ -37,7 +35,7 @@ export default {
     },
     data: function() {
         return {
-            ampVals: [[], [], [], [], [], [], [], [], [], [], [], [], [], [], []],
+            data: [[], [], [], []],
             chartIntervalId: null
         }
     },
@@ -48,7 +46,7 @@ export default {
                 backgroundColor: '#303030',
                 title: {
                     backgroundColor: '#404040',
-                    text: 'Realtime Amperage',
+                    text: 'Realtime Tempture',
                     color: '#fff',
                     height: '30px',
                 },
@@ -76,7 +74,7 @@ export default {
                     },
                     scaleLabel: {
                         backgroundColor: '#424242',
-                        padding:5
+                        padding: 5
                     }
                 },
                 scaleX: {
@@ -84,7 +82,11 @@ export default {
                      zooming: true
                 },
                 scaleY: {
-                    zooming: true
+                    zooming: true,
+                    label: {
+                        text: "Celsius",
+                        color: "#ccc"
+                    }
                 },
                 tooltip: {
                     visible: false
@@ -100,80 +102,24 @@ export default {
                 },
                 series: [
                     {
-                        values: this.ampVals[0],
-                        text: "PDP 0",
+                        values: this.data[0],
+                        text: "Left One",
                         'line-width': 2,
 
                     },{
-                        values: this.ampVals[1],
-                        text: "PDP 1",
+                        values: this.data[1],
+                        text: "Left Two",
                         'line-width': 2,
 
                     },{
-                        values: this.ampVals[2],
-                        text: "PDP 2",
+                        values: this.data[2],
+                        text: "Right One",
                         'line-width': 2,
 
                     },{
-                        values: this.ampVals[3],
-                        text: "PDP 3",
+                        values: this.data[3],
+                        text: "Right Two",
                         'line-width': 2,
-
-                    },{
-                        values: this.ampVals[4],
-                        text: "PDP 4",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[5],
-                        text: "PDP 5",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[6],
-                        text: "PDP 6",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[7],
-                        text: "PDP 7",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[8],
-                        text: "PDP 8",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[9],
-                        text: "PDP 9",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[10],
-                        text: "PDP 10",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[11],
-                        text: "PDP 11",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[12],
-                        text: "PDP 12",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[12],
-                        text: "PDP 13",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[13],
-                        text: "PDP 14",
-                        'line-width': 2,
-
                     }
                 ]
             }
