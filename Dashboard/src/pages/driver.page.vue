@@ -22,6 +22,8 @@ export default {
             colorSelectionValue: 0,
             shootingWheelSpeed: 0,
             brownedOut: false,
+            isOverheating: false,
+            isAmpWarning: false,
             autoModes: [
                 {
                     text: 'Most Basic Shoot',
@@ -49,6 +51,20 @@ export default {
 
         getImgSrc: function() {
             return require(`../assets/field-${this.autoModeValue}.jpg`);
+        },
+
+        checkMotors: function() {
+            let temp = [];
+            let amps = [];
+            temp.push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_LeftOne', logger.logData));
+            temp.push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_LeftTwo', logger.logData));
+            temp.push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_RightOne', logger.logData));
+            temp.push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_RightTwo', logger.logData));
+            this.isOverheating = temp[0] > 100 || temp[1] > 100 || temp[2] > 100 || temp[3] > 100;
+            this.isAmpWarning = false;
+            for (let i = 0; i < 15; i++) {
+                this.isAmpWarning = NetworkTables.getValue('/SmartDashboard/PDP_' + i, 0) > 60 || this.isAmpWarning;
+            }
         }
     },
     mounted: function() {
@@ -90,9 +106,9 @@ export default {
             <img src="http://10.29.90.11:5800" class="limelight">
         </v-col>
         <v-col cols="3">
-            <indicator class="indicator" icon="robot" label="Robot Enabled" networkKey="RobotEnabled" />
-            <indicator class="indicator" icon="robot-mower" label="Intake on" networkKey="intakeMotor" />
-            <indicator class="indicator" icon="robot-industrial" label="Intake Down" networkKey="intakeExtended" />
+            <indicator class="indicator" icon="battery-alert" label="Brown Out" v-bind:toggledValue="this.brownedOut" warn />
+            <indicator class="indicator" icon="battery-alert" label="Over Heating" v-bind:toggledValue="this.isOverheating" warn />
+            <indicator class="indicator" icon="battery-alert" label="High Amps" v-bind:toggledValue="this.isAmpWarning" warn />
             <v-select
                 :items="autoModes"
                 label="Auto Mode"
@@ -107,7 +123,9 @@ export default {
         </v-col>
         <v-col cols="3">
             <MatchTimer />
-            <indicator class="indicator" icon="battery-alert" label="Brown Out" v-bind:toggledValue="this.brownedOut" warn />
+            <indicator class="indicator" icon="robot" label="Robot Enabled" networkKey="RobotEnabled" />
+            <indicator class="indicator" icon="robot-mower" label="Intake on" networkKey="intakeMotor" />
+            <indicator class="indicator" icon="robot-industrial" label="Intake Down" networkKey="intakeExtended" />
             <indicator class="indicator" icon="ship-wheel" label="Spinning Wheel" warn spin networkKey="TODO_KEY" />
             <indicator class="indicator" icon="share-all" label="Shooter Ready" v-bind:toggledValue="shootingWheelSpeed" />
             <BallCounter /> 
@@ -133,8 +151,9 @@ export default {
 
     .field-img {
         display: inline-block;
-        margin-left: 10px;
+        margin-left: 0px;
         margin-bottom: -40px;
+        width: 85%;
     }
 
     .limelight {

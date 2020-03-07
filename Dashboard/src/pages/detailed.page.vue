@@ -2,6 +2,7 @@
 import PIDChart from '../components/PIDChart';
 import PidInputs from '../components/PidInputs';
 import MotorChart from '../components/MotorChart'
+import TempChart from '../components/TempChart'
 import * as logger from '../utils/logger'
 
 export default {
@@ -10,6 +11,7 @@ export default {
     components: {
         PIDChart,
         MotorChart,
+        TempChart,
         PidInputs
     },
 
@@ -29,15 +31,22 @@ export default {
 
 <template>
 <v-container class="fill-height" fluid>
-    <v-col cols="6">
-        <MotorChart class="amp-chart" />
-    </v-col>
-    <v-col cols="6">
-        <PIDChart class="pid-chart" />
-        <div class="actions" v-for="str in pidList" :key="str">
-            <PidInputs :baseStr="str" />
-        </div>
-    </v-col>
+    <v-row>
+        <v-col cols="6">
+            <MotorChart class="amp-chart" />
+        </v-col>
+        <v-col cols="6">
+            <TempChart class="amp-chart" />
+        </v-col>
+    </v-row>
+    <v-row>
+        <v-col cols="12">
+            <PIDChart class="pid-chart" />
+            <div class="actions" v-for="str in pidList" :key="str">
+                <PidInputs :baseStr="str" />
+            </div>
+        </v-col>
+    </v-row>
 
 </v-container>
 </template>
