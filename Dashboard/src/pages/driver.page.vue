@@ -56,21 +56,24 @@ export default {
         checkMotors: function() {
             let temp = [];
             let amps = [];
-            temp.push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_LeftOne', logger.logData));
-            temp.push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_LeftTwo', logger.logData));
-            temp.push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_RightOne', logger.logData));
-            temp.push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_RightTwo', logger.logData));
-            this.isOverheating = temp[0] > 100 || temp[1] > 100 || temp[2] > 100 || temp[3] > 100;
+            const WARNING_TEMP = 30;
+            const WARNING_AMPS = 30;
+            temp.push(NetworkTables.getValue('/SmartDashboard/DriveTrain_LeftOne', 0));
+            temp.push(NetworkTables.getValue('/SmartDashboard/DriveTrain_LeftTwo', 0));
+            temp.push(NetworkTables.getValue('/SmartDashboard/DriveTrain_RightOne', 0));
+            temp.push(NetworkTables.getValue('/SmartDashboard/DriveTrain_RightTwo', 0));
+            this.isOverheating = temp[0] > WARNING_TEMP || temp[1] > WARNING_TEMP || temp[2] > WARNING_TEMP || temp[3] > WARNING_TEMP;
             this.isAmpWarning = false;
             for (let i = 0; i < 15; i++) {
-                this.isAmpWarning = NetworkTables.getValue('/SmartDashboard/PDP_' + i, 0) > 60 || this.isAmpWarning;
+                this.isAmpWarning = NetworkTables.getValue('/SmartDashboard/PDP_' + i, 0) > WARNING_AMPS || this.isAmpWarning;
             }
         }
     },
     mounted: function() {
+        setInterval(this.checkMotors, 500);
+
         NetworkTables.addRobotConnectionListener(
             (connected) => {
-                console.log('robot connected', )
                 return this.robotConnected = connected
             },
             true
@@ -106,9 +109,9 @@ export default {
             <img src="http://10.29.90.11:5800" class="limelight">
         </v-col>
         <v-col cols="3">
-            <indicator class="indicator" icon="battery-alert" label="Brown Out" v-bind:toggledValue="this.brownedOut" warn />
-            <indicator class="indicator" icon="battery-alert" label="Over Heating" v-bind:toggledValue="this.isOverheating" warn />
-            <indicator class="indicator" icon="battery-alert" label="High Amps" v-bind:toggledValue="this.isAmpWarning" warn />
+            <indicator class="indicator" icon="battery-alert-variant" label="Brown Out" v-bind:status="this.brownedOut" warn />
+            <indicator class="indicator" icon="thermometer-alert" label="Over Heating" v-bind:status="this.isOverheating" warn />
+            <indicator class="indicator" icon="flash-alert" label="High Amps" v-bind:status="this.isAmpWarning" warn />
             <v-select
                 :items="autoModes"
                 label="Auto Mode"
@@ -127,7 +130,6 @@ export default {
             <indicator class="indicator" icon="robot-mower" label="Intake on" networkKey="intakeMotor" />
             <indicator class="indicator" icon="robot-industrial" label="Intake Down" networkKey="intakeExtended" />
             <indicator class="indicator" icon="ship-wheel" label="Spinning Wheel" warn spin networkKey="TODO_KEY" />
-            <indicator class="indicator" icon="share-all" label="Shooter Ready" v-bind:toggledValue="shootingWheelSpeed" />
             <BallCounter /> 
         </v-col>
     </v-row>

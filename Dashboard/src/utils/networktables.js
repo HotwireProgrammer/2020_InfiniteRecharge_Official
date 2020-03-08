@@ -22,6 +22,8 @@ export const NetworkTables =
             delete keys[mesg.key];
         });
         ipc.on('update', (ev, mesg) => {
+            // console.log('mesg.key', mesg.key)
+            // console.log('keys', keys)
             let temp = keys[mesg.key];
             temp.flags = mesg.flags;
             temp.val = mesg.val;
@@ -115,6 +117,14 @@ export const NetworkTables =
                     let temp = keys[key];
                     f(key, temp.val, temp.new);
                 }
+            },
+
+            clearKeyListeners() {
+                keyListeners = {};
+            },
+
+            getKeyListeners() {
+                return keyListeners;
             },
             /**
              * Use this to test whether a value is present in the table or not

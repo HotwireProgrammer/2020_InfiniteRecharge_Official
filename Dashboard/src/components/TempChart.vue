@@ -20,10 +20,12 @@ export default {
             this.chartIntervalId = setInterval(() => {
                 this.updateGraph();
             }, 500);
+            this.buttonText = "Pause Data Feed"
         },
         pauseChart() {
             clearInterval(this.chartIntervalId);
             this.chartIntervalId = null;
+            this.buttonText = "Start Data Feed"
         },
         toggleChart() {
             if (this.chartIntervalId === null) {
@@ -36,7 +38,8 @@ export default {
     data: function() {
         return {
             data: [[], [], [], []],
-            chartIntervalId: null
+            chartIntervalId: null,
+            buttonText: "Pause Data Feed"
         }
     },
     computed: {
@@ -62,7 +65,8 @@ export default {
                         size : 3
                     },
                     plotLabel: {
-                        backgroundColor: '#909090',
+                        backgroundColor: '#222',
+                        color: '#fff',
                         borderColor: '#ddd',
                         borderRadius: 5,
                         padding: 15,
@@ -137,8 +141,7 @@ export default {
         height="55"
         outlined
         @click="toggleChart()">
-        
-            Toggle Data Feed
+            {{buttonText}}
     </v-btn>
   </div>
 </template>

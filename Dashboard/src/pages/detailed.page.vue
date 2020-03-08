@@ -17,7 +17,7 @@ export default {
 
     data: function() {
         return {
-            pidList: ["thing1", "thing2"]
+            pidList: ["thingy1", "thingy2"]
         };
     },  
     methods: {

@@ -11,7 +11,7 @@ export default {
     },
     methods: {
         updateGraph(callback) {
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 16; i++) {
                 this.ampVals[i].push(NetworkTables.getValue('/SmartDashboard/PDP_' + i, 0));
                 if (this.ampVals[i].length > 40) {
                     this.ampVals[i].shift();
@@ -22,10 +22,12 @@ export default {
             this.chartIntervalId = setInterval(() => {
                 this.updateGraph();
             }, 500);
+            this.buttonText = "Pause Data Feed"
         },
         pauseChart() {
             clearInterval(this.chartIntervalId);
             this.chartIntervalId = null;
+            this.buttonText = "Start Data Feed"
         },
         toggleChart() {
             if (this.chartIntervalId === null) {
@@ -37,8 +39,9 @@ export default {
     },
     data: function() {
         return {
-            ampVals: [[], [], [], [], [], [], [], [], [], [], [], [], [], [], []],
-            chartIntervalId: null
+            ampVals: [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []],
+            chartIntervalId: null,
+            buttonText: "Pause Data Feed"
         }
     },
     computed: {
@@ -64,7 +67,8 @@ export default {
                         size : 3
                     },
                     plotLabel: {
-                        backgroundColor: '#909090',
+                        backgroundColor: '#222',
+                        color: '#fff',
                         borderColor: '#ddd',
                         borderRadius: 5,
                         padding: 15,
@@ -101,77 +105,82 @@ export default {
                 series: [
                     {
                         values: this.ampVals[0],
-                        text: "PDP 0",
+                        text: "Right DT (0)",
                         'line-width': 2,
 
                     },{
                         values: this.ampVals[1],
-                        text: "PDP 1",
+                        text: "Right DT (1)",
                         'line-width': 2,
 
                     },{
                         values: this.ampVals[2],
-                        text: "PDP 2",
+                        text: "Shooter (2)",
                         'line-width': 2,
 
                     },{
                         values: this.ampVals[3],
-                        text: "PDP 3",
+                        text: "Shooter (3)",
                         'line-width': 2,
 
                     },{
                         values: this.ampVals[4],
-                        text: "PDP 4",
+                        text: "Floor Belt (4)",
                         'line-width': 2,
 
                     },{
                         values: this.ampVals[5],
-                        text: "PDP 5",
+                        text: "Intake (5)",
                         'line-width': 2,
 
-                    },{
-                        values: this.ampVals[6],
-                        text: "PDP 6",
-                        'line-width': 2,
+                    // },{
+                    //     values: this.ampVals[6],
+                    //     text: "PDP 6",
+                    //     'line-width': 2,
 
-                    },{
-                        values: this.ampVals[7],
-                        text: "PDP 7",
-                        'line-width': 2,
+                    // },{
+                    //     values: this.ampVals[7],
+                    //     text: "PDP 7",
+                    //     'line-width': 2,
 
-                    },{
-                        values: this.ampVals[8],
-                        text: "PDP 8",
-                        'line-width': 2,
+                    // },{
+                    //     values: this.ampVals[8],
+                    //     text: "PDP 8",
+                    //     'line-width': 2,
 
-                    },{
-                        values: this.ampVals[9],
-                        text: "PDP 9",
-                        'line-width': 2,
+                    // },{
+                    //     values: this.ampVals[9],
+                    //     text: "PDP 9",
+                    //     'line-width': 2,
 
                     },{
                         values: this.ampVals[10],
-                        text: "PDP 10",
+                        text: "Control Panel (10)",
                         'line-width': 2,
 
                     },{
                         values: this.ampVals[11],
-                        text: "PDP 11",
+                        text: "Indexer (11)",
                         'line-width': 2,
 
                     },{
                         values: this.ampVals[12],
-                        text: "PDP 12",
-                        'line-width': 2,
-
-                    },{
-                        values: this.ampVals[12],
-                        text: "PDP 13",
+                        text: "Climber (12)",
                         'line-width': 2,
 
                     },{
                         values: this.ampVals[13],
-                        text: "PDP 14",
+                        text: "Climber (13)",
+                        'line-width': 2,
+
+                    },{
+                        values: this.ampVals[14],
+                        text: "Left DT (14)",
+                        'line-width': 2,
+
+                    },{
+                        values: this.ampVals[15],
+                        text: "Right DT (15)",
                         'line-width': 2,
 
                     }
@@ -191,8 +200,7 @@ export default {
         height="55"
         outlined
         @click="toggleChart()">
-        
-            Toggle Data Feed
+            {{buttonText}}
     </v-btn>
   </div>
 </template>

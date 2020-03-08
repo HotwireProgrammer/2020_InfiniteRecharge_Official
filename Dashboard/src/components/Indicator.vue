@@ -28,8 +28,7 @@ export default {
         },
         networkKey: String,
         status: {
-            type: Boolean,
-            default: false
+            type: Boolean
         },
         warn: Boolean,
         spin: Boolean
@@ -47,11 +46,11 @@ export default {
     <v-icon 
         class="icon"
         v-bind:class="{'mdi-spin': status && spin}"
-        v-bind:color="status || toggledOn ? activeColor : 'white'"
+        v-bind:color="(status ? status : toggledOn) ? activeColor : 'white'"
         x-large>
             mdi-{{icon}}
     </v-icon>
-    <span v-bind:class="{ active: status || toggledOn, warn: warn }">{{label}}</span>
+    <span v-bind:class="{ active: status ? status : toggledOn, warn: warn }">{{label}}</span>
 </div>
 </template>
 

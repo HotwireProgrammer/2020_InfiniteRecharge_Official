@@ -174,8 +174,8 @@ function RobotClientConnections() {
         client.Assign(mesg.val, mesg.key, (mesg.flags & 1) === 1);
     });
     ipcMain.on('update', (event, mesg) => {
-        logger.logEvent('ICP: Update ' + mesg);
-        console.log(mesg)
+        logger.logEvent(`ICP: Update ${mesg.key} - ${mesg.val}`);
+        // console.log(mesg)
         client.Update(mesg.id, mesg.val);
     });
     ipcMain.on('windowError', (event, error) => {

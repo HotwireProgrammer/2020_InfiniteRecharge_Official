@@ -24,7 +24,6 @@ new Vue({
     vuetify,
     render: h => h(App),
     mounted() {
-        logger.logEvent('MOUNTED');
         NetworkTables.addRobotConnectionListener(onRobotConnection, false);
         if (!NetworkTables.isRobotConnected()) {
             setTimeout(this.connectionRetry, 500);
@@ -52,6 +51,10 @@ new Vue({
         },
         initDataLogging: function() {
             if (this.dataLoggingStarted) return;
+            
+            // console.log(NetworkTables.getKeyListeners());
+            //Try this, untested
+            // NetworkTables.clearKeyListeners();
 
             this.dataLoggingStarted = true;
             NetworkTables.addKeyListener('/SmartDashboard/ballCounter', logger.logData);
@@ -59,19 +62,19 @@ new Vue({
             NetworkTables.addKeyListener('/SmartDashboard/PDP_Voltage', logger.logData);
             NetworkTables.addKeyListener('/SmartDashboard/Shooter_Speed', logger.logData);
             NetworkTables.addKeyListener('/SmartDashboard/Shooter_RPM', logger.logData);
-            this.data[0].push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_LeftOne', logger.logData));
-            this.data[1].push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_LeftTwo', logger.logData));
-            this.data[2].push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_RightOne', logger.logData));
-            this.data[3].push(NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_RightTwo', logger.logData));
+            NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_LeftOne', logger.logData);
+            NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_LeftTwo', logger.logData);
+            NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_RightOne', logger.logData);
+            NetworkTables.addKeyListener('/SmartDashboard/DriveTrain_RightTwo', logger.logData);
 
             for (let i = 0; i < 15; i++) {
                 NetworkTables.addKeyListener('/SmartDashboard/PDP_' + i, logger.logData);
             }
 
-            NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (enabled) => {
-                if (!enabled) {
+            NetworkTables.addKeyListener('/SmartDashboard/RobotEnabled', (_key, value) => {
+                if (!value) {
                     console.log('endofmatch');
-                    endMatchProcessing();
+                    logger.endMatchProcessing();
                 }
             });
         }

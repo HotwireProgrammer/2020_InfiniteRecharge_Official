@@ -21,3 +21,6 @@ https://vuetifyjs.com/en/components/api-explorer
 
 Simple Charts
 https://www.npmjs.com/package/vuetrend
+
+Icons
+https://cdn.materialdesignicons.com/4.9.95/
