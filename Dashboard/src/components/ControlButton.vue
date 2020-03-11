@@ -1,6 +1,16 @@
 <script>
 import { NetworkTables } from '../utils/networktables'
 
+/**
+ *  Create a button based on inputted props that sends a signal to the robot
+ *  
+ *  Inputs: 
+ *      label: string - Text for the button
+ *      networkKey: string - The network key your robot expects (this value is appended to '/SmartDashboard/')
+ *      togglable: boolean - True if the button has an on/off state
+ *
+ *  Network key: /SmartDashboard/*
+ */
 export default {
     name: 'ControlButton',
     props: {

@@ -1,6 +1,19 @@
 <script>
 import { NetworkTables } from '../utils/networktables'
 
+/**
+ *  Create an indicator based on inputted props to show a state of the robot
+ *  
+ *  Inputs: 
+ *      label: string - Text for the indicator
+ *      icon: string - Material design Icon name (this value is appended to 'mdi-')
+ *      status: boolean - Optional. For complex indicators you can pass in the status of the indicator
+ *      networkKey: string - Optional. The network key your robot will send the state to. Leave out if using status
+ *      warn: boolean - Optional. The true state turns orange instead of green
+ *      spin: boolean - Optional. The true state spins the icon
+ *
+ *  Network key: /SmartDashboard/*
+ */
 export default {
     name: 'MatchTimer',
 

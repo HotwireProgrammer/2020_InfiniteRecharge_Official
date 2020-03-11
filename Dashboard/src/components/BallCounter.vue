@@ -1,29 +1,34 @@
 <script>
 import { NetworkTables } from '../utils/networktables'
 
+/**
+ *  Shows how many Balls are in the Intake.
+ *  Changes color based for warning when nearing the max ball count
+ *  Up and down arrows to change the ball count in the robot.
+ *
+ *  Network key: /SmartDashboard/ballCounter
+ */
 export default {
     name: 'BallCouter',
 
     components: {},
     mounted:function(){
-        NetworkTables.addKeyListener('/SmartDashboard/ballCounter', this.ballUpdate);
-        this.ballVal = NetworkTables.getValue('/SmartDashboard/ballCounter', 0)
+        NetworkTables.addKeyListener(this.networkKey, this.ballUpdate);
+        this.ballVal = NetworkTables.getValue(this.networkKey, 0)
     },
     
     data: () => (
         {
             ballVal: 0,
+            warnBallCount: 4,
+            maxBallCount: 5,
+            networkKey: '/SmartDashboard/ballCounter'
         }
     ),
 
     methods: {
         ballUpdate: function(key, value) {
             this.ballVal = value;
-        },
-
-        validator: function(value) {
-            let isNumber = value >= 0 && value <= 6;
-            return isNumber || 'Not Valid'; 
         },
     }
 };
@@ -34,23 +39,14 @@ export default {
     <v-icon class="up-icon" @click="ballVal++" large>mdi-arrow-up-bold</v-icon>
     <span 
         class="counter-field"
-        :class="{ warn: ballVal===4, ready: ballVal===5, stop: ballVal>5 }"
+        :class="{ warn: ballVal===warnBallCount, ready: ballVal===maxBallCount, stop: ballVal>maxBallCount }"
     >
         {{ballVal}}
     </span>
     <v-icon class="down-icon" @click="ballVal--" large>mdi-arrow-down-bold</v-icon>
-        <span class="counter-field">
+    <span class="counter-field">
         Balls
-        </span>
-<!--
-    <v-text-field 
-        class="counter-field" 
-        height="90px"
-        :rules="[this.validator]" 
-        label="Ball Count"
-        v-model="ballVal"
-    ></v-text-field> 
--->
+    </span>
 </div>
 </template>
 
