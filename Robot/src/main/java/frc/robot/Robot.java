@@ -220,10 +220,16 @@ public class Robot extends TimedRobot {
 		// Configuration Complete
 		rightSixBall.add(new EncoderForward(driveTrain, 120000f, -0.3f));
 		// 5 balls intaked
-		rightSixBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
+		rightSixBall.add(new LimelightTrack(driveTrain, shooter, limelight, -1f));
 		rightSixBall.add(new Shoot(shooter, indexer, 3900.0, 5));
 		// shooting done
-
+		rightSixBall.add(new NavxTurn(driveTrain, navx, 0, 0.2f, 2.0f));
+		rightSixBall.add(new EncoderForward(driveTrain, 25000f, -0.3f));
+		//Second SHooting Session
+		rightSixBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
+		rightSixBall.add(new Shoot(shooter, indexer, 3900.0, 5));
+ 
+		//CENTER EIGHT BALL
 		centerFiveBall = new LinkedList<AutoStep>();
 		centerFiveBall.add(new NavxReset(navx));
 		centerFiveBall.add(new ShooterRev(shooter, 4100.0));
@@ -248,15 +254,15 @@ public class Robot extends TimedRobot {
 		centerEightBall.add(new IntakeDrop(intakeSolenoid));
 		centerEightBall.add(new IntakeRun(intakeSeven, 1.0f));
 		// Configuration Done
-		centerEightBall.add(new EncoderForward(driveTrain, 72000f, -0.85f)); // 85
-		centerEightBall.add(new NavxTurn(driveTrain, navx, 75, .4f, 4.0f));
-		centerEightBall.add(new EncoderForward(driveTrain, 14000f, -0.3f)); // 16000
-		centerEightBall.add(new EncoderForward(driveTrain, 10000f, 0.3f));
+		centerEightBall.add(new EncoderForward(driveTrain, 93000f, -0.4f)); // 72000, -0.85
+		centerEightBall.add(new NavxTurn(driveTrain, navx, 75, .3f, 4.0f));
+		centerEightBall.add(new EncoderForward(driveTrain, 10000f, -0.2f)); // 14000
+		centerEightBall.add(new EncoderForward(driveTrain, 10000f, 0.2f));
 		centerEightBall.add(new NavxTurn(driveTrain, navx, 90, .3f, 5.0f));
-		centerEightBall.add(new EncoderForward(driveTrain, 20000f, -0.3f));
+		centerEightBall.add(new EncoderForward(driveTrain, 20000f, -0.2f));
 		// Balls intaked
-		centerEightBall.add(new EncoderForward(driveTrain, 10000f, 0.3f));
-		centerEightBall.add(new NavxTurn(driveTrain, navx, 10, .9f, 4.0f));// 15
+		centerEightBall.add(new EncoderForward(driveTrain, 10000f, 0.2f));
+		centerEightBall.add(new NavxTurn(driveTrain, navx, 10, .3f, 4.0f));// 15
 		centerEightBall.add(new Wait(driveTrain, 0.1f));
 		centerEightBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
 		// First Shooting Session
@@ -276,7 +282,6 @@ public class Robot extends TimedRobot {
 		double autoChoice = SmartDashboard.getNumber(autoSelectKey, 0);
 
 		// Overides Dashboard.
-		// autoChoice = 4;
 
 		if (autoChoice == 0) {
 			autonomousSelected = mostBasicShoot;
@@ -352,6 +357,7 @@ public class Robot extends TimedRobot {
 
 		// Controllers
 		driver = new Joystick(0);
+		
 		operator = new Joystick(1);
 		flightStickLeft = new Joystick(3);
 		flightStickRight = new Joystick(2);
@@ -472,8 +478,11 @@ public class Robot extends TimedRobot {
 		// Shooter 5=Left Bumper
 		shooter.rpmTarget = SmartDashboard.getNumber(shooter.shooterRPMKey, shooter.shooterRPMTarget);
 		if (operator.getRawButton(5)) {
-			shooter.rpmTarget = 3900;
-			// SmartDashboard.putNumber(shooter.shooterRPMKey, 5700);
+			if (limelight.GetArea() >= 1.5) {
+				shooter.rpmTarget = 3900;
+			} else {
+				shooter.rpmTarget = 4050;
+			}
 			limelight.SetLight(true);
 		} else {
 			limelight.SetLight(false);
@@ -482,11 +491,12 @@ public class Robot extends TimedRobot {
 		// TODO
 		// Indexer 3=X 6=Right Bumper 8=Start
 		if (operator.getRawButton(6)) {
-			indexer.RunManualForward(0.4f, 0.05f);
+			limelight.Position(driveTrain, 1, 0);
+			indexer.RunManualForward(0.4f, 0.05f, limelight.OnTarget());
 			driveTrain.SetBreak();
 			SmartDashboard.putNumber("ballCounter", 0);
 		} else if (operator.getRawButton(8)) { // Manual Override Backwards
-			indexer.RunManualForward(-0.4f, 0.05f);
+			indexer.RunManualForward(-0.4f, 0.05f, limelight.OnTarget());
 			SmartDashboard.putNumber("ballCounter", 0);
 		} else {
 			indexer.RunAutomatic(operator.getRawButton(2));
@@ -537,8 +547,8 @@ public class Robot extends TimedRobot {
 		} else {
 			if (!operator.getRawButton(6)) {
 				driveTrain.SetCoast();
+				ControllerDrive();
 			}
-			ControllerDrive();
 		}
 
 		UpdateMotors();
@@ -572,7 +582,11 @@ public class Robot extends TimedRobot {
 		return (v0 + t * (v1 - v0));
 	}
 
-	public void testPeriodic() {
+	public void testPeriodic() 
+
+	{
+
+		System.out.println("BREAK " + indexer.beamBreakOne.get());
 		System.out.println(SmartDashboard.getNumber("autoMode", 0));
 		limelight.SetLight(true);
 		System.out.println(navx.getYaw() + " Navx");
@@ -592,8 +606,10 @@ public class Robot extends TimedRobot {
 		} else {
 
 			// tank
-			float leftJoystick = DriveScaleSelector((float) flightStickLeft.getRawAxis(1), DriveScale.linear);
-			float rightJoystick = DriveScaleSelector((float) flightStickRight.getRawAxis(1), DriveScale.linear);
+			float rightJoystick = DriveScaleSelector((float) flightStickLeft.getRawAxis(1) * -1, DriveScale.linear);
+			float leftJoystick = DriveScaleSelector((float) flightStickRight.getRawAxis(1) * -1, DriveScale.linear);
+			//float leftJoystick = DriveScaleSelector((float) driver.getRawAxis(1), DriveScale.linear);
+			//float rightJoystick = DriveScaleSelector((float) driver.getRawAxis(5), DriveScale.linear);
 
 			driveTrain.SetRightSpeed(-rightJoystick);
 			driveTrain.SetLeftSpeed(-leftJoystick);

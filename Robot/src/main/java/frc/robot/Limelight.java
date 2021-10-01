@@ -113,14 +113,14 @@ public class Limelight {
             NetworkTableInstance.getDefault().getTable("limelight").getEntry("stream").setNumber(0);
 
             float maxArea = 3.4f;
-            float minArea = 0.26f;
+            float minArea = 0.28f;
             float currentAreaPercentage = ((float) area - minArea) / (maxArea - minArea);
 
             // float currentSpeed = Lerp(minSpeed, maxSpeed, currentAreaPercentage);
-            float p = 0.04f;
+            float p = 0.02f;
             float currentSpeed = (float) Math.abs(x) * p;
-            if (currentSpeed < 0.25f) {
-                currentSpeed = 0.25f;
+            if (currentSpeed < 0.2f) {
+                currentSpeed = 0.2f;
             }
             float turnSpeedSlow = -currentSpeed * 0.25f;
 

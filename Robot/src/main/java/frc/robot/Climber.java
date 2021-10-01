@@ -17,7 +17,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 public class Climber {
 
     public TalonSRX climberOne = new TalonSRX(49);
-    public TalonSRX climberTwo = new TalonSRX(52);
+    public TalonSRX climberTwo = new TalonSRX(53);
     public DoubleSolenoid lockDoubleSolenoid = new DoubleSolenoid(6, 7);
 
     public float changeDelay = 0.2f;

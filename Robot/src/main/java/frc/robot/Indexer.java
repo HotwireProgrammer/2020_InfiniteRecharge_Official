@@ -6,8 +6,6 @@ import edu.wpi.first.wpilibj.Timer;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-import javax.lang.model.util.ElementScanner6;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
 public class Indexer {
@@ -42,7 +40,7 @@ public class Indexer {
         firstAutomatic = true;
     }
 
-    public void RunManualForward(float speed, float RPMBuffer) {
+    public void RunManualForward(float speed, float RPMBuffer, boolean targetTrue) {
         ballCounter = 0;
         loopCount = 0;
         shooterStarted = false;
@@ -54,7 +52,7 @@ public class Indexer {
         // ball - false
         // no ball - true
         System.out.println(" SHOOTER " + shooter.UpToSpeed(RPMBuffer) + " - BEAM " + beamBreakTop.get());
-        if (shooter.UpToSpeed(RPMBuffer) || beamBreakTop.get()) {
+        if ((shooter.UpToSpeed(RPMBuffer) && targetTrue)  || beamBreakTop.get()) {
             System.out.println("MOVING");
             indexerFive.set(ControlMode.PercentOutput, -speed);
             // floorBeltEight.set(ControlMode.PercentOutput, speed * 0.5f);
@@ -107,18 +105,20 @@ public class Indexer {
 
             double buffer = 2000;
             double distance = Math.abs(indexerFive.getSelectedSensorPosition() - ticksTarget);
-            double pValue = 0.000014f;// 0.000012f
+            double pValue = 0.000016f;// 0.000012f
 
             if (ballCounter == 1) {
                 pValue = pValue * 0.9f;
             }
-
+            if (ballCounter == 3) {
+                pValue = pValue * 1.1f;
+            }
             if (ballCounter == 4) {
-                pValue = pValue * 1.1;
+                pValue = pValue * 1.1f;
             }
 
             double speed = distance * pValue;
-            speed = MathUtil.clamp(speed, 0.15f, 1.0f);
+            speed = MathUtil.clamp(speed, 0.2f, 1.0f);
 
             double floorBackSpeed = -0.2f;
             System.out.println("speed of index " + speed);

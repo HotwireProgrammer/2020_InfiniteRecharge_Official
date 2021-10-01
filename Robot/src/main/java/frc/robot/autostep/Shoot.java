@@ -44,7 +44,8 @@ public class Shoot extends AutoStep {
 
     public void Update() {
         if (Math.abs(tickStart - indexer.indexerFive.getSelectedSensorPosition()) < 700000){
-            indexer.RunManualForward(0.6f, 0.03f);
+           //TODO
+            indexer.RunManualForward(0.6f, 0.03f, true);
         }else{
             isDone = true;
         }  
