@@ -196,17 +196,12 @@ public class Robot extends TimedRobot {
 
 		// right five ball ---------------
 		rightFiveBall = new LinkedList<AutoStep>();
-		rightFiveBall.add(new NavxReset(navx));
-		rightFiveBall.add(new ShooterRev(shooter, 3900.0));
+		//rightFiveBall.add(new NavxReset(navx));
+		//rightFiveBall.add(new ShooterRev(shooter, 3900.0));
 		rightFiveBall.add(new IntakeDrop(intakeSolenoid));
 		rightFiveBall.add(new IntakeRun(intakeSeven, 1.0f));
 		// Configuration Complete
 		rightFiveBall.add(new EncoderForward(driveTrain, 120000f, -0.3f));
-		// 5 balls intaked
-		rightFiveBall.add(new NavxTurn(driveTrain, navx, -30f, 0.35f, 2f));
-		rightFiveBall.add(new EncoderForward(driveTrain, 60000f, 0.5f));
-		rightFiveBall.add(new NavxTurn(driveTrain, navx, 0, 0.3f, 3f));
-		rightFiveBall.add(new Wait(driveTrain, 0.1f));
 		// Shooting
 		rightFiveBall.add(new LimelightTrack(driveTrain, shooter, limelight, 0.0f));
 		rightFiveBall.add(new Shoot(shooter, indexer, 3900.0, 5));
@@ -282,7 +277,7 @@ public class Robot extends TimedRobot {
 		double autoChoice = SmartDashboard.getNumber(autoSelectKey, 0);
 
 		// Overides Dashboard.
-
+		autoChoice = 1;
 		if (autoChoice == 0) {
 			autonomousSelected = mostBasicShoot;
 
@@ -404,53 +399,6 @@ public class Robot extends TimedRobot {
 			ColorTwo.set(ControlMode.PercentOutput, 0.0f);
 		}
 
-		if (false) {
-			// Intake Sensor (31)
-			if (ColorWheelLimit.get() == true && !limitPressed) {
-				limitPressed = true;
-				colorChangsCount = colorChangsCount + 1;
-			}
-			if (ColorWheelLimit.get() == false) {
-				limitPressed = false;
-			}
-			// Color Sensor (25)
-			// ColorWheel currentColor = GetCurrentColor();
-			// if (currentColor != LastColor && currentColor != ColorWheel.Unknown) {
-			// colorChangsCount = colorChangsCount + 1;
-			// LastColor = currentColor;
-			// }
-
-			// Reset Color Changes Number
-			if (flightStickLeft.getRawButton(8)) {
-				colorChangsCount = 0;
-			}
-
-			// Color Wheel Spin
-			if (flightStickLeft.getRawButton(9)) {
-				if (colorChangsCount <= 31) {// 25
-					MotorSeven.set(ControlMode.PercentOutput, 1.0f);
-				} else {
-					MotorSeven.set(ControlMode.PercentOutput, 0.0f);
-				}
-
-			} else {
-				if (flightStickLeft.getRawButton(10)) {
-					MotorSeven.set(ControlMode.PercentOutput, 0.5f);
-				} else {
-					MotorSeven.set(ControlMode.PercentOutput, 0.0f);
-				}
-			}
-
-			// Color Wheel Find
-			if (flightStickLeft.getRawButton(11)) {
-				if (GetTargetColor() != LastColor) {
-					MotorSeven.set(ControlMode.PercentOutput, 1.0f);
-				} else {
-					MotorSeven.set(ControlMode.PercentOutput, 0.0f);
-				}
-			}
-		}
-
 		// Intake 2=B, 4=Y
 		double intakeSpeed = 0.8f;
 		if (operator.getRawButton(2)) {
@@ -478,10 +426,11 @@ public class Robot extends TimedRobot {
 		// Shooter 5=Left Bumper
 		shooter.rpmTarget = SmartDashboard.getNumber(shooter.shooterRPMKey, shooter.shooterRPMTarget);
 		if (operator.getRawButton(5)) {
+			float speed = 4000;
 			if (limelight.GetArea() >= 1.5) {
-				shooter.rpmTarget = 3900;
+				shooter.rpmTarget = speed;
 			} else {
-				shooter.rpmTarget = 4050;
+				shooter.rpmTarget = speed;
 			}
 			limelight.SetLight(true);
 		} else {
@@ -491,8 +440,8 @@ public class Robot extends TimedRobot {
 		// TODO
 		// Indexer 3=X 6=Right Bumper 8=Start
 		if (operator.getRawButton(6)) {
-			limelight.Position(driveTrain, 1, 0);
-			indexer.RunManualForward(0.4f, 0.05f, limelight.OnTarget());
+			//limelight.Position(driveTrain, 1, 0);
+			indexer.RunManualForward(0.4f, 0.08f, limelight.OnTarget());
 			driveTrain.SetBreak();
 			SmartDashboard.putNumber("ballCounter", 0);
 		} else if (operator.getRawButton(8)) { // Manual Override Backwards
@@ -537,8 +486,8 @@ public class Robot extends TimedRobot {
 		 * climber.Reset(); } climber.climbMotors(0.0f); }
 		 */
 		// Lime Light
-		if (flightStickLeft.getRawButton(6) || (flightStickLeft.getRawButton(7))) {
-			if (flightStickLeft.getRawButton(6)) {
+		if (flightStickRight.getRawButton(6) || (flightStickRight.getRawButton(7))) {
+			if (flightStickRight.getRawButton(6)) {
 				limelight.Position(driveTrain, 1, 0);
 			} else {
 				limelight.Position(driveTrain, -1, 0);
@@ -606,8 +555,8 @@ public class Robot extends TimedRobot {
 		} else {
 
 			// tank
-			float rightJoystick = DriveScaleSelector((float) flightStickLeft.getRawAxis(1) * -1, DriveScale.linear);
-			float leftJoystick = DriveScaleSelector((float) flightStickRight.getRawAxis(1) * -1, DriveScale.linear);
+			float rightJoystick = DriveScaleSelector((float) flightStickLeft.getRawAxis(1), DriveScale.linear);
+			float leftJoystick = DriveScaleSelector((float) flightStickRight.getRawAxis(1), DriveScale.linear);
 			//float leftJoystick = DriveScaleSelector((float) driver.getRawAxis(1), DriveScale.linear);
 			//float rightJoystick = DriveScaleSelector((float) driver.getRawAxis(5), DriveScale.linear);
 

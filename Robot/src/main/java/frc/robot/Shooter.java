@@ -32,6 +32,12 @@ public class Shooter {
 
     public Shooter(Limelight limelight) {
         this.limelight = limelight;
+
+        float rampRate = 0.5f;
+        shooterTwo.configOpenloopRamp(rampRate);
+        shooterFive.configOpenloopRamp(rampRate);
+        shooterTwo.configClosedloopRamp(rampRate);
+        shooterFive.configClosedloopRamp(rampRate);
     } 
 
     public void Init() {

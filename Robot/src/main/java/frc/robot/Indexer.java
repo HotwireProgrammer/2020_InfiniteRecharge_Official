@@ -52,7 +52,7 @@ public class Indexer {
         // ball - false
         // no ball - true
         System.out.println(" SHOOTER " + shooter.UpToSpeed(RPMBuffer) + " - BEAM " + beamBreakTop.get());
-        if ((shooter.UpToSpeed(RPMBuffer) && targetTrue)  || beamBreakTop.get()) {
+        if ((shooter.UpToSpeed(RPMBuffer))  || beamBreakTop.get()) {
             System.out.println("MOVING");
             indexerFive.set(ControlMode.PercentOutput, -speed);
             // floorBeltEight.set(ControlMode.PercentOutput, speed * 0.5f);
@@ -105,7 +105,7 @@ public class Indexer {
 
             double buffer = 2000;
             double distance = Math.abs(indexerFive.getSelectedSensorPosition() - ticksTarget);
-            double pValue = 0.000016f;// 0.000012f
+            double pValue = 0.000015f;// 0.000012f
 
             if (ballCounter == 1) {
                 pValue = pValue * 0.9f;
